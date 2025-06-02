@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer');
 
+// FORCE RAILWAY REDEPLOY - 2025-06-02 - Final fix for logger.error issues
 // Use try-catch for logger import to handle initialization issues
 // Updated: Added extra safety for Railway deployment
 let logger, logError;
