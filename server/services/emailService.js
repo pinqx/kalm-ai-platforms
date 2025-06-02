@@ -1,6 +1,7 @@
 const nodemailer = require('nodemailer');
 
 // Use try-catch for logger import to handle initialization issues
+// Updated: Added extra safety for Railway deployment
 let logger, logError;
 try {
   const loggerModule = require('../utils/logger');
@@ -13,6 +14,7 @@ try {
   }
 } catch (err) {
   // Fallback to console if logger is not available
+  console.warn('⚠️  Logger not available, using console fallback for email service');
   logger = {
     error: (message, meta) => console.error('Email Service Error:', message, meta),
     info: (message, meta) => console.log('Email Service Info:', message, meta),
@@ -45,8 +47,10 @@ class EmailService {
       if (process.env.NODE_ENV === 'development' && !process.env.EMAIL_USER) {
         this.createTestAccount();
       }
+      
+      console.log('✅ Email transporter initialized successfully');
     } catch (error) {
-      // Use the fallback logError function
+      // Double-check logError function availability for Railway safety
       if (typeof logError === 'function') {
         logError('Failed to initialize email transporter', error);
       } else {
