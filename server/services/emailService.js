@@ -4,11 +4,18 @@ const nodemailer = require('nodemailer');
 let logger, logError;
 try {
   const loggerModule = require('../utils/logger');
-  logger = loggerModule.logger;
-  logError = loggerModule.logError;
+  logger = loggerModule.logger || console;
+  logError = loggerModule.logError || ((message, error) => {
+    console.error('Email Service Error:', message, error);
+  });
 } catch (err) {
   // Fallback to console if logger is not available
-  logger = console;
+  logger = {
+    error: (message, error) => console.error('Email Service Error:', message, error),
+    info: (message) => console.log('Email Service Info:', message),
+    warn: (message) => console.warn('Email Service Warning:', message),
+    debug: (message) => console.log('Email Service Debug:', message)
+  };
   logError = (message, error) => {
     console.error('Email Service Error:', message, error);
   };
