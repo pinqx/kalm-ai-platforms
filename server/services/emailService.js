@@ -2,12 +2,13 @@ const nodemailer = require('nodemailer');
 
 // Railway-safe email service - NO external logger dependencies
 // Use only console for all logging to prevent initialization issues
+// FORCE RAILWAY REDEPLOY - 2025-06-02 21:20 - FINAL logger.error elimination
 
 class EmailService {
   constructor() {
     this.transporter = null;
     this.initialized = false;
-    console.log('📧 EmailService instance created (Railway-safe mode)');
+    console.log('📧 EmailService instance created (Railway-safe mode - v2.1)');
   }
 
   async ensureInitialized() {
@@ -19,6 +20,9 @@ class EmailService {
 
   async initializeTransporter() {
     try {
+      // Railway-safe email configuration - using only console logging
+      console.log('🔧 Initializing email transporter (Railway-safe mode)');
+      
       // Configure Gmail SMTP (you can also use other providers)
       this.transporter = nodemailer.createTransport({
         service: 'gmail',
@@ -33,8 +37,9 @@ class EmailService {
         await this.createTestAccount();
       }
       
-      console.log('✅ Email transporter initialized successfully');
+      console.log('✅ Email transporter initialized successfully (Railway-safe)');
     } catch (error) {
+      // CRITICAL: Using console.error instead of logger.error for Railway compatibility
       console.error('❌ Email Service Error: Failed to initialize email transporter', error.message);
       // Don't throw - let app continue without email functionality
     }
