@@ -29,10 +29,18 @@ try {
 class EmailService {
   constructor() {
     this.transporter = null;
-    this.initializeTransporter();
+    this.initialized = false;
+    // Don't initialize immediately - use lazy initialization
   }
 
-  initializeTransporter() {
+  async ensureInitialized() {
+    if (!this.initialized) {
+      await this.initializeTransporter();
+      this.initialized = true;
+    }
+  }
+
+  async initializeTransporter() {
     try {
       // Configure Gmail SMTP (you can also use other providers)
       this.transporter = nodemailer.createTransport({
@@ -45,7 +53,7 @@ class EmailService {
 
       // For development, we'll use Ethereal Email (test email service)
       if (process.env.NODE_ENV === 'development' && !process.env.EMAIL_USER) {
-        this.createTestAccount();
+        await this.createTestAccount();
       }
       
       console.log('✅ Email transporter initialized successfully');
@@ -90,6 +98,9 @@ class EmailService {
 
   async sendPaymentConfirmation(userEmail, paymentDetails) {
     try {
+      // Ensure email service is initialized
+      await this.ensureInitialized();
+      
       const { planId, amount, paymentIntentId, userName, billingDate } = paymentDetails;
       
       const planNames = {
@@ -365,6 +376,9 @@ Making Sales Smarter
 
   async sendWelcomeEmail(userEmail, userName) {
     try {
+      // Ensure email service is initialized
+      await this.ensureInitialized();
+      
       const mailOptions = {
         from: process.env.EMAIL_FROM || 'KALM AI Sales Platform <noreply@kalm-ai.com>',
         to: userEmail,
