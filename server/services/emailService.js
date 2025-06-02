@@ -58,7 +58,7 @@ class EmailService {
       
       console.log('✅ Email transporter initialized successfully');
     } catch (error) {
-      // Double-check logError function availability for Railway safety
+      // Use safe error logging for Railway deployment compatibility
       if (typeof logError === 'function') {
         logError('Failed to initialize email transporter', error);
       } else {
