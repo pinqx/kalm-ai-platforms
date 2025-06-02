@@ -1,12 +1,25 @@
-const OpenAI = require('openai');
 const fs = require('fs');
 const FormData = require('form-data');
 const { logAI } = require('../utils/logger');
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Conditionally import and initialize OpenAI client only when needed
+let OpenAI = null;
+let openai = null;
+
+// Initialize OpenAI client only if we have an API key and want to use real OpenAI
+function initializeOpenAI() {
+  if (!OpenAI) {
+    OpenAI = require('openai');
+  }
+  
+  if (!openai && process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'your_openai_api_key_here') {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+  
+  return openai;
+}
 
 /**
  * Transcribe audio file using OpenAI Whisper API
@@ -53,6 +66,13 @@ async function transcribeAudioFile(audioFilePath, options = {}, progressCallback
     let transcriptionResult;
 
     if (useOpenAI) {
+      // Initialize OpenAI client only when needed
+      const openaiClient = initializeOpenAI();
+      
+      if (!openaiClient) {
+        throw new Error('OpenAI client could not be initialized');
+      }
+
       // Progress update: Sending to OpenAI
       if (progressCallback) {
         progressCallback({
@@ -62,7 +82,7 @@ async function transcribeAudioFile(audioFilePath, options = {}, progressCallback
       }
 
       // Create transcription using Whisper API
-      const transcription = await openai.audio.transcriptions.create({
+      const transcription = await openaiClient.audio.transcriptions.create({
         file: fs.createReadStream(audioFilePath),
         model: 'whisper-1',
         language: options.language || 'en', // Auto-detect if not specified
