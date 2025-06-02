@@ -8,7 +8,7 @@ try {
   logError = loggerModule.logError;
   
   // Verify logger has required methods
-  if (!logger || typeof logger.error !== 'function') {
+  if (!logger || typeof logError !== 'function') {
     throw new Error('Logger not properly initialized');
   }
 } catch (err) {
@@ -33,7 +33,7 @@ class EmailService {
   initializeTransporter() {
     try {
       // Configure Gmail SMTP (you can also use other providers)
-      this.transporter = nodemailer.createTransporter({
+      this.transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
           user: process.env.EMAIL_USER, // Your email
@@ -46,7 +46,12 @@ class EmailService {
         this.createTestAccount();
       }
     } catch (error) {
-      logError('Failed to initialize email transporter', error);
+      // Use the fallback logError function
+      if (typeof logError === 'function') {
+        logError('Failed to initialize email transporter', error);
+      } else {
+        console.error('Email Service Error: Failed to initialize email transporter', error);
+      }
     }
   }
 
@@ -71,7 +76,11 @@ class EmailService {
         webUrl: 'https://ethereal.email'
       });
     } catch (error) {
-      logError('Failed to create test email account', error);
+      if (typeof logError === 'function') {
+        logError('Failed to create test email account', error);
+      } else {
+        console.error('Email Service Error: Failed to create test email account', error);
+      }
     }
   }
 
@@ -131,7 +140,11 @@ class EmailService {
 
       return { success: true, messageId: info.messageId };
     } catch (error) {
-      logError('Failed to send payment confirmation email', error, null, { userEmail });
+      if (typeof logError === 'function') {
+        logError('Failed to send payment confirmation email', error, null, { userEmail });
+      } else {
+        console.error('Email Service Error: Failed to send payment confirmation email', error);
+      }
       return { success: false, error: error.message };
     }
   }
@@ -221,7 +234,7 @@ class EmailService {
             }
             .feature-item:before {
                 content: "✅ ";
-                margin-right: 10px;
+                margin-right: 8px;
             }
             .cta-button {
                 display: inline-block;
@@ -235,7 +248,7 @@ class EmailService {
                 text-align: center;
             }
             .footer {
-                margin-top: 40px;
+                margin-top: 30px;
                 padding-top: 20px;
                 border-top: 1px solid #e5e7eb;
                 text-align: center;
@@ -243,11 +256,11 @@ class EmailService {
                 font-size: 14px;
             }
             .support-info {
+                margin-top: 20px;
+                padding: 15px;
                 background: #fef3c7;
                 border-radius: 8px;
-                padding: 15px;
-                margin: 20px 0;
-                border-left: 4px solid #f59e0b;
+                color: #92400e;
             }
         </style>
     </head>
@@ -257,11 +270,10 @@ class EmailService {
                 <div class="logo">KALM AI</div>
                 <div class="success-icon">🎉</div>
                 <h1 class="title">Payment Confirmed!</h1>
-                <p>Thank you for your purchase, ${userName}!</p>
+                <p>Welcome to ${planName}, ${userName}!</p>
             </div>
 
             <div class="payment-details">
-                <h3 style="margin-top: 0; color: #4f46e5;">Payment Details</h3>
                 <div class="detail-row">
                     <span class="detail-label">Plan:</span>
                     <span class="detail-value">${planName}</span>
@@ -275,43 +287,35 @@ class EmailService {
                     <span class="detail-value">${paymentIntentId}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">Next Billing:</span>
-                    <span class="detail-value">${new Date(billingDate).toLocaleDateString()}</span>
+                    <span class="detail-label">Account:</span>
+                    <span class="detail-value">${userEmail}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">Email:</span>
-                    <span class="detail-value">${userEmail}</span>
+                    <span class="detail-label">Next Billing:</span>
+                    <span class="detail-value">${billingDate}</span>
                 </div>
             </div>
 
             <div class="features">
-                <h3 style="color: #4f46e5;">What's included in your ${planName}:</h3>
+                <h3>Your Plan Includes:</h3>
                 <ul class="feature-list">
-                    <li class="feature-item">AI-powered sales call analysis</li>
-                    <li class="feature-item">Smart email generation</li>
+                    <li class="feature-item">Advanced AI-powered sales call analysis</li>
                     <li class="feature-item">Real-time collaboration tools</li>
-                    <li class="feature-item">Advanced analytics dashboard</li>
+                    <li class="feature-item">Comprehensive analytics dashboard</li>
                     <li class="feature-item">Priority customer support</li>
-                    <li class="feature-item">Regular feature updates</li>
+                    <li class="feature-item">Integration with popular CRM systems</li>
                 </ul>
             </div>
 
-            <div style="text-align: center;">
-                <a href="http://localhost:5173" class="cta-button">Access Your Dashboard</a>
-            </div>
-
             <div class="support-info">
-                <strong>Need Help?</strong><br>
-                Our support team is here to help you get the most out of KALM AI. 
-                Contact us at support@kalm-ai.com or visit our help center.
+                <h4>Need Help Getting Started?</h4>
+                <p>Our team is here to help! Contact us at support@kalm-ai.com or visit our documentation center.</p>
             </div>
 
             <div class="footer">
-                <p>This email was sent to ${userEmail} because you recently made a purchase with KALM AI.</p>
-                <p>KALM AI Sales Platform | AI-Powered Sales Enablement</p>
-                <p style="font-size: 12px; margin-top: 15px;">
-                    If you have any questions about this payment, please contact our support team.
-                </p>
+                <p>Thank you for choosing KALM AI Sales Platform!</p>
+                <p>Questions? Email us at support@kalm-ai.com</p>
+                <p>KALM AI • Making Sales Smarter</p>
             </div>
         </div>
     </body>
@@ -323,36 +327,35 @@ class EmailService {
     const { userName, planName, amount, paymentIntentId, billingDate } = details;
     
     return `
-KALM AI - Payment Confirmation
+🎉 PAYMENT CONFIRMED - KALM AI Sales Platform
 
-Hi ${userName},
+Hello ${userName},
 
-Thank you for your purchase! Your payment has been successfully processed.
+Your payment has been successfully processed!
 
-Payment Details:
-• Plan: ${planName}
-• Amount: $${amount}
-• Payment ID: ${paymentIntentId}
-• Next Billing: ${new Date(billingDate).toLocaleDateString()}
+PAYMENT DETAILS:
+- Plan: ${planName}
+- Amount: $${amount}
+- Payment ID: ${paymentIntentId}
+- Next Billing: ${billingDate}
 
-Your ${planName} includes:
-✅ AI-powered sales call analysis
-✅ Smart email generation
+YOUR PLAN INCLUDES:
+✅ Advanced AI-powered sales call analysis
 ✅ Real-time collaboration tools
-✅ Advanced analytics dashboard
+✅ Comprehensive analytics dashboard
 ✅ Priority customer support
-✅ Regular feature updates
+✅ Integration with popular CRM systems
 
-Access your dashboard: http://localhost:5173
+GETTING STARTED:
+Visit your dashboard to start analyzing your sales calls and gain valuable insights.
 
-Need help? Contact us at support@kalm-ai.com
+Need help? Contact our support team at support@kalm-ai.com
 
-Best regards,
-The KALM AI Team
+Thank you for choosing KALM AI!
 
 ---
-This email was sent because you recently made a purchase with KALM AI.
-If you have any questions about this payment, please contact our support team.
+KALM AI Sales Platform
+Making Sales Smarter
     `;
   }
 
@@ -361,21 +364,21 @@ If you have any questions about this payment, please contact our support team.
       const mailOptions = {
         from: process.env.EMAIL_FROM || 'KALM AI Sales Platform <noreply@kalm-ai.com>',
         to: userEmail,
-        subject: '🚀 Welcome to KALM AI - Let\'s Get Started!',
+        subject: `🚀 Welcome to KALM AI Sales Platform!`,
         html: this.generateWelcomeHTML(userName, userEmail),
         text: this.generateWelcomeText(userName)
       };
 
       const info = await this.transporter.sendMail(mailOptions);
+      console.log('📧 Welcome email sent:', { userEmail, messageId: info.messageId });
       
-      console.log('📧 Welcome email sent:', {
-        userEmail,
-        messageId: info.messageId
-      });
-
       return { success: true, messageId: info.messageId };
     } catch (error) {
-      logError('Failed to send welcome email', error, null, { userEmail });
+      if (typeof logError === 'function') {
+        logError('Failed to send welcome email', error, null, { userEmail });
+      } else {
+        console.error('Email Service Error: Failed to send welcome email', error);
+      }
       return { success: false, error: error.message };
     }
   }
@@ -409,7 +412,7 @@ If you have any questions about this payment, please contact our support team.
                 margin-bottom: 30px;
             }
             .logo {
-                font-size: 28px;
+                font-size: 32px;
                 font-weight: bold;
                 color: #4f46e5;
                 margin-bottom: 10px;
@@ -418,13 +421,50 @@ If you have any questions about this payment, please contact our support team.
                 font-size: 48px;
                 margin-bottom: 20px;
             }
+            .title {
+                color: #1f2937;
+                font-size: 28px;
+                margin-bottom: 10px;
+            }
+            .subtitle {
+                color: #6b7280;
+                font-size: 18px;
+            }
+            .content {
+                margin: 30px 0;
+                line-height: 1.8;
+            }
+            .features {
+                background: #f8fafc;
+                border-radius: 8px;
+                padding: 25px;
+                margin: 25px 0;
+                border-left: 4px solid #4f46e5;
+            }
+            .feature-list {
+                list-style: none;
+                padding: 0;
+                margin: 15px 0;
+            }
+            .feature-item {
+                padding: 10px 0;
+                border-bottom: 1px solid #e5e7eb;
+                font-size: 16px;
+            }
+            .feature-item:last-child {
+                border-bottom: none;
+            }
+            .feature-item:before {
+                content: "🚀 ";
+                margin-right: 8px;
+            }
             .cta-button {
                 display: inline-block;
-                background: linear-gradient(135deg, #4f46e5, #7c3aed);
+                background: #4f46e5;
                 color: white;
-                text-decoration: none;
-                padding: 12px 30px;
+                padding: 15px 30px;
                 border-radius: 8px;
+                text-decoration: none;
                 font-weight: 600;
                 margin: 20px 0;
                 text-align: center;
@@ -437,6 +477,13 @@ If you have any questions about this payment, please contact our support team.
                 color: #6b7280;
                 font-size: 14px;
             }
+            .highlight {
+                background: #fef3c7;
+                padding: 20px;
+                border-radius: 8px;
+                margin: 20px 0;
+                color: #92400e;
+            }
         </style>
     </head>
     <body>
@@ -444,30 +491,40 @@ If you have any questions about this payment, please contact our support team.
             <div class="header">
                 <div class="logo">KALM AI</div>
                 <div class="welcome-icon">🚀</div>
-                <h1>Welcome to KALM AI!</h1>
-                <p>Hi ${userName}, we're excited to have you on board!</p>
+                <h1 class="title">Welcome, ${userName}!</h1>
+                <p class="subtitle">Your AI-powered sales analysis journey starts now</p>
             </div>
 
-            <p>You're now part of the KALM AI family - the most advanced AI-powered sales enablement platform.</p>
-            
-            <p>Ready to revolutionize your sales process? Here's what you can do next:</p>
-            
-            <ul>
-                <li>Upload your first sales call transcript for AI analysis</li>
-                <li>Generate personalized follow-up emails</li>
-                <li>Explore your analytics dashboard</li>
-                <li>Collaborate with your team in real-time</li>
-            </ul>
+            <div class="content">
+                <p>Thank you for joining KALM AI Sales Platform! We're excited to help you transform your sales call analysis with cutting-edge AI technology.</p>
+                
+                <div class="features">
+                    <h3>🎯 What you can do with KALM AI:</h3>
+                    <ul class="feature-list">
+                        <li class="feature-item">Upload and analyze sales call transcripts with advanced AI</li>
+                        <li class="feature-item">Get real-time insights on call performance and outcomes</li>
+                        <li class="feature-item">Collaborate with your team in real-time</li>
+                        <li class="feature-item">Track analytics and measure improvement over time</li>
+                        <li class="feature-item">Generate AI-powered follow-up emails</li>
+                    </ul>
+                </div>
 
-            <div style="text-align: center;">
-                <a href="http://localhost:5173" class="cta-button">Get Started Now</a>
+                <div class="highlight">
+                    <h4>🎉 Ready to get started?</h4>
+                    <p>Log in to your dashboard and upload your first sales call transcript to see the magic happen!</p>
+                </div>
+
+                <div style="text-align: center;">
+                    <a href="https://kalm.live" class="cta-button">Access Your Dashboard</a>
+                </div>
+
+                <p>If you have any questions or need assistance, our support team is here to help at <strong>support@kalm-ai.com</strong>.</p>
             </div>
-
-            <p>If you have any questions, our support team is here to help at support@kalm-ai.com</p>
 
             <div class="footer">
-                <p>Welcome aboard!</p>
-                <p>The KALM AI Team</p>
+                <p>Welcome to the future of sales analysis!</p>
+                <p>KALM AI Sales Platform • Making Sales Smarter</p>
+                <p>This email was sent to ${userEmail}</p>
             </div>
         </div>
     </body>
@@ -477,26 +534,34 @@ If you have any questions about this payment, please contact our support team.
 
   generateWelcomeText(userName) {
     return `
-Welcome to KALM AI!
+🚀 WELCOME TO KALM AI SALES PLATFORM!
 
-Hi ${userName},
+Hello ${userName},
 
-We're excited to have you on board! You're now part of the KALM AI family - the most advanced AI-powered sales enablement platform.
+Thank you for joining KALM AI! We're excited to help you transform your sales call analysis with cutting-edge AI technology.
 
-Ready to revolutionize your sales process? Here's what you can do next:
-• Upload your first sales call transcript for AI analysis
-• Generate personalized follow-up emails  
-• Explore your analytics dashboard
+🎯 WHAT YOU CAN DO WITH KALM AI:
+• Upload and analyze sales call transcripts with advanced AI
+• Get real-time insights on call performance and outcomes  
 • Collaborate with your team in real-time
+• Track analytics and measure improvement over time
+• Generate AI-powered follow-up emails
 
-Get started: http://localhost:5173
+🎉 READY TO GET STARTED?
+Log in to your dashboard and upload your first sales call transcript to see the magic happen!
 
-If you have any questions, our support team is here to help at support@kalm-ai.com
+Visit: https://kalm.live
 
-Welcome aboard!
-The KALM AI Team
+Need help? Contact our support team at support@kalm-ai.com
+
+Welcome to the future of sales analysis!
+
+---
+KALM AI Sales Platform
+Making Sales Smarter
     `;
   }
 }
 
+// Export a singleton instance
 module.exports = new EmailService(); 
