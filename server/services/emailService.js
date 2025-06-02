@@ -4,20 +4,23 @@ const nodemailer = require('nodemailer');
 let logger, logError;
 try {
   const loggerModule = require('../utils/logger');
-  logger = loggerModule.logger || console;
-  logError = loggerModule.logError || ((message, error) => {
-    console.error('Email Service Error:', message, error);
-  });
+  logger = loggerModule.logger;
+  logError = loggerModule.logError;
+  
+  // Verify logger has required methods
+  if (!logger || typeof logger.error !== 'function') {
+    throw new Error('Logger not properly initialized');
+  }
 } catch (err) {
   // Fallback to console if logger is not available
   logger = {
-    error: (message, error) => console.error('Email Service Error:', message, error),
-    info: (message) => console.log('Email Service Info:', message),
-    warn: (message) => console.warn('Email Service Warning:', message),
-    debug: (message) => console.log('Email Service Debug:', message)
+    error: (message, meta) => console.error('Email Service Error:', message, meta),
+    info: (message, meta) => console.log('Email Service Info:', message, meta),
+    warn: (message, meta) => console.warn('Email Service Warning:', message, meta),
+    debug: (message, meta) => console.log('Email Service Debug:', message, meta)
   };
-  logError = (message, error) => {
-    console.error('Email Service Error:', message, error);
+  logError = (message, error, req, meta) => {
+    console.error('Email Service Error:', message, error, meta);
   };
 }
 
@@ -43,7 +46,7 @@ class EmailService {
         this.createTestAccount();
       }
     } catch (error) {
-      logError('Failed to initialize email transporter', error);
+      logger.error('Failed to initialize email transporter', { error: error.message });
     }
   }
 

@@ -1,9 +1,14 @@
 [build]
 builder = "nixpacks"
-buildCommand = "cd server && npm ci"
+buildCommand = "npm ci && cd server && npm ci"
+watchPatterns = ["server/**"]
 
 [deploy]
-startCommand = "cd server && npm start"
+startCommand = "cd server && PORT=$PORT npm start"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
-restartPolicyType = "on_failure" 
+restartPolicyType = "on_failure"
+numReplicas = 1
+
+[env]
+NODE_ENV = "production" 
