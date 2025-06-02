@@ -1,17 +1,18 @@
 # Use Node.js 18 Alpine for smaller image size
 FROM node:18-alpine
 
-# Set working directory to server subdirectory
-WORKDIR /app/server
+# Set working directory
+WORKDIR /app
 
-# Copy package.json files
-COPY server/package*.json ./
+# Copy startup script and server files
+COPY start.js ./
+COPY server/package*.json ./server/
 
 # Install dependencies
-RUN npm ci --only=production
+RUN cd server && npm ci --only=production
 
-# Copy application code
-COPY server ./
+# Copy server application code
+COPY server ./server/
 
 # Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
@@ -26,7 +27,7 @@ EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node healthcheck.js || exit 1
+  CMD cd server && node healthcheck.js || exit 1
 
 # Start the application
-CMD ["node", "server.js"] 
+CMD ["node", "start.js"] 

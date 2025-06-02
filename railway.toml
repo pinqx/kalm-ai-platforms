@@ -1,10 +1,10 @@
 [build]
 builder = "nixpacks"
-buildCommand = "npm ci --prefix server"
+buildCommand = "cd server && npm ci"
 watchPatterns = ["server/**"]
 
 [deploy]
-startCommand = "cd server && node server.js"
+startCommand = "node start.js"
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"

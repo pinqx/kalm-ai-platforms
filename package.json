@@ -2,9 +2,9 @@
   "name": "kalm-ai-platform",
   "version": "1.0.0",
   "description": "KALM AI Sales Platform - Real-time Sales Call Analysis",
-  "main": "server/server.js",
+  "main": "start.js",
   "scripts": {
-    "start": "cd server && npm start",
+    "start": "node start.js",
     "build": "cd server && npm ci",
     "dev": "cd server && npm run dev",
     "install-server": "cd server && npm ci",
