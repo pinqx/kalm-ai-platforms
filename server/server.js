@@ -53,7 +53,7 @@ const io = socketIo(server, {
     credentials: true
   }
 });
-const port = process.env.PORT || 3002;
+const port = process.env.PORT || 3000;
 
 // Initialize collaboration service
 const collaborationService = new CollaborationService(io);

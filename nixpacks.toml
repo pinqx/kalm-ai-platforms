@@ -8,8 +8,7 @@ cmds = ['npm ci --prefix server']
 cmds = ['echo "No build step required"']
 
 [start]
-cmd = 'sh -c "cd server && node server.js"'
+cmd = 'cd server && node server.js'
 
 [variables]
-NODE_ENV = 'production'
-PORT = '3000' 
+NODE_ENV = 'production' 
