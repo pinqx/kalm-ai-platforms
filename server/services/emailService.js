@@ -46,7 +46,7 @@ class EmailService {
         this.createTestAccount();
       }
     } catch (error) {
-      logger.error('Failed to initialize email transporter', { error: error.message });
+      logError('Failed to initialize email transporter', error);
     }
   }
 
