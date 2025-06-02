@@ -1,0 +1,31 @@
+{
+  "name": "kalm-ai-platform",
+  "version": "1.0.0",
+  "description": "KALM AI Sales Platform - Real-time Sales Call Analysis",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "cd server && npm start",
+    "build": "cd server && npm ci",
+    "dev": "cd server && npm run dev",
+    "install-server": "cd server && npm ci",
+    "install-client": "cd client && npm ci",
+    "postinstall": "npm run install-server"
+  },
+  "keywords": [
+    "ai",
+    "sales",
+    "analytics",
+    "collaboration",
+    "real-time"
+  ],
+  "author": "KALM AI",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pinqx/kalm-ai-platforms.git"
+  }
+} 
