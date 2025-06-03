@@ -54,7 +54,7 @@ interface TranscriptAnalysis {
   transcriptionConfidence?: number;
 }
 
-type ActiveTab = 'home' | 'upload' | 'email' | 'chat' | 'dashboard' | 'history' | 'pricing' | 'realtime' | 'collaboration' | 'advanced-analytics' | 'admin' | 'usage' | 'lead-generation';
+type ActiveTab = 'home' | 'upload' | 'email' | 'chat' | 'dashboard' | 'history' | 'pricing' | 'realtime' | 'collaboration' | 'advanced-analytics' | 'admin' | 'usage' | 'lead-management';
 
 function App() {
   const [analysis, setAnalysis] = useState<TranscriptAnalysis | null>(null);
@@ -193,13 +193,13 @@ function App() {
     { id: 'advanced-analytics', name: 'Advanced Analytics', icon: TrophyIcon, color: 'purple' },
     { id: 'usage', name: 'Usage', icon: ChartBarIcon, color: 'yellow' },
     { id: 'admin', name: 'Admin', icon: Cog6ToothIcon, color: 'red' }, // Admin tab
-    { id: 'lead-generation', name: 'Lead Generation', icon: SparklesIcon, color: 'teal' },
+    { id: 'lead-management', name: 'Lead Management', icon: SparklesIcon, color: 'teal' }, // Admin only
   ];
 
   // Filter tabs based on user role
   const tabs = allTabs.filter(tab => {
-    if (tab.id === 'admin') {
-      return isAdmin(user); // Only show admin tab to admin users
+    if (tab.id === 'admin' || tab.id === 'lead-management') {
+      return isAdmin(user); // Only show admin tabs to admin users
     }
     return true; // Show all other tabs to everyone
   });
@@ -599,7 +599,7 @@ function App() {
               </div>
             )}
 
-            {activeTab === 'lead-generation' && (
+            {activeTab === 'lead-management' && (
               <div className="space-y-6 animate-fade-in">
                 <div className="bg-white rounded-xl shadow-lg border border-gray-200/50 p-6">
                   <div className="flex items-center mb-4">
@@ -608,10 +608,10 @@ function App() {
                     </div>
                     <div>
                       <h2 className="text-2xl font-bold text-gray-900 mb-1">
-                        Lead Generation
+                        Lead Management (Admin Only)
                       </h2>
                       <p className="text-gray-600 text-sm">
-                        Generate leads and opportunities from your sales conversations.
+                        Organize and track your manual LinkedIn outreach campaigns.
                       </p>
                     </div>
                   </div>

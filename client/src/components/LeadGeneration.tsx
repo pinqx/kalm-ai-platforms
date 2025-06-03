@@ -12,7 +12,10 @@ import {
   EyeIcon,
   LinkIcon,
   UserPlusIcon,
-  BoltIcon
+  BoltIcon,
+  ExclamationTriangleIcon,
+  ShieldCheckIcon,
+  DocumentTextIcon
 } from '@heroicons/react/24/outline';
 
 interface Lead {
@@ -40,32 +43,14 @@ interface EmailTemplate {
   responseRate: number;
 }
 
-interface Campaign {
-  id: string;
-  name: string;
-  status: 'active' | 'paused' | 'completed';
-  templates: string[];
-  leads: string[];
-  dailyLimit: number;
-  sentToday: number;
-  totalSent: number;
-  responses: number;
-  conversions: number;
-  createdDate: string;
-}
-
 const LeadGeneration: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'leads' | 'templates' | 'campaigns' | 'analytics'>('leads');
+  const [activeTab, setActiveTab] = useState<'leads' | 'templates' | 'tracking' | 'compliance'>('leads');
   const [leads, setLeads] = useState<Lead[]>([]);
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
-  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
-  const [showAddLead, setShowAddLead] = useState(false);
-  const [showAddTemplate, setShowAddTemplate] = useState(false);
-  const [showAddCampaign, setShowAddCampaign] = useState(false);
 
   // Mock data for demonstration
   useEffect(() => {
-    // Mock leads data
+    // Mock leads data - for manual tracking only
     setLeads([
       {
         id: '1',
@@ -77,7 +62,7 @@ const LeadGeneration: React.FC = () => {
         status: 'new',
         source: 'linkedin',
         addedDate: '2024-01-15',
-        notes: 'High-potential lead, manages 20+ person sales team',
+        notes: 'Found via LinkedIn search - 20+ person sales team, SaaS company',
         score: 92
       },
       {
@@ -91,7 +76,7 @@ const LeadGeneration: React.FC = () => {
         source: 'linkedin',
         addedDate: '2024-01-14',
         lastContactDate: '2024-01-15',
-        notes: 'Responded positively to initial outreach',
+        notes: 'Manually reached out via LinkedIn - positive response',
         score: 88
       },
       {
@@ -105,101 +90,34 @@ const LeadGeneration: React.FC = () => {
         source: 'linkedin',
         addedDate: '2024-01-13',
         lastContactDate: '2024-01-16',
-        notes: 'Interested in demo, scheduled for next week',
+        notes: 'Interested in demo - scheduled for next week',
         score: 95
       }
     ]);
 
-    // Mock email templates
+    // Email templates for manual sending
     setTemplates([
       {
         id: '1',
-        name: 'Initial LinkedIn Outreach',
-        subject: 'Transform your sales team performance with AI - {{company}}',
+        name: 'Initial LinkedIn Message',
+        subject: 'AI Sales Intelligence for {{company}}',
         content: `Hi {{firstName}},
 
-I noticed you're leading sales at {{company}} and thought you'd be interested in how AI is transforming sales performance.
+I noticed you're leading sales at {{company}} and thought you might be interested in how AI is helping sales teams improve their call analysis and coaching.
 
-At KALM, we help sales teams like yours:
-• Increase close rates by 25%
-• Reduce coaching time by 60%
+At KALM, we help teams like yours:
 • Get instant insights from every sales conversation
+• Identify missed objections and opportunities
+• Scale coaching across the entire team
 
-We've helped companies like TechCorp and GrowthCo see measurable improvements within 30 days.
-
-Would you be open to a 15-minute demo to see how this could impact {{company}}'s sales performance?
+Would you be open to a quick 15-minute conversation about how this could help {{company}}'s sales performance?
 
 Best regards,
 Alex Fisher
-Founder, KALM AI
-
-P.S. We're offering a free 14-day trial with no setup required.`,
+Founder, KALM AI`,
         type: 'initial',
-        openRate: 68,
-        responseRate: 24
-      },
-      {
-        id: '2',
-        name: 'Follow-up #1',
-        subject: 'Quick question about {{company}}\'s sales coaching',
-        content: `Hi {{firstName}},
-
-I sent a note last week about how AI can help sales teams improve performance.
-
-Quick question: How much time does your team currently spend on sales coaching and call reviews?
-
-Most of our clients were spending 5-10 hours per week before KALM. Now they get the same insights instantly after every call.
-
-Worth a quick 15-minute conversation to see if this could help {{company}}?
-
-Best,
-Alex`,
-        type: 'followup1',
-        openRate: 72,
-        responseRate: 18
-      },
-      {
-        id: '3',
-        name: 'Follow-up #2 - Case Study',
-        subject: 'How TechCorp increased sales by 35% with AI',
-        content: `Hi {{firstName}},
-
-Thought you'd find this interesting - one of our clients, TechCorp, just shared their results after 3 months with KALM:
-
-✅ 35% increase in close rates
-✅ 60% reduction in coaching time
-✅ $2M+ additional revenue attributed to better call insights
-
-The VP of Sales said: "KALM helped us identify objections we were missing and coach our team more effectively."
-
-Would love to show you how similar results could work for {{company}}.
-
-Available for a quick call this week?
-
-Best,
-Alex
-
-P.S. Happy to send over the full case study if you're interested.`,
-        type: 'followup2',
-        openRate: 65,
-        responseRate: 22
-      }
-    ]);
-
-    // Mock campaigns
-    setCampaigns([
-      {
-        id: '1',
-        name: 'LinkedIn Sales Leaders Q1 2024',
-        status: 'active',
-        templates: ['1', '2', '3'],
-        leads: ['1', '2', '3'],
-        dailyLimit: 50,
-        sentToday: 23,
-        totalSent: 1247,
-        responses: 89,
-        conversions: 12,
-        createdDate: '2024-01-01'
+        openRate: 0, // Manual tracking
+        responseRate: 0
       }
     ]);
   }, []);
@@ -226,29 +144,58 @@ P.S. Happy to send over the full case study if you're interested.`,
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="bg-white rounded-xl shadow-lg border border-gray-200/50 p-6">
-        <div className="flex items-center justify-between">
+      {/* Compliance Warning Header */}
+      <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+        <div className="flex items-start">
+          <ExclamationTriangleIcon className="h-6 w-6 text-yellow-600 mr-3 mt-0.5 flex-shrink-0" />
           <div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-1">Lead Generation & Automation</h2>
-            <p className="text-gray-600 text-sm">Automate LinkedIn outreach and email sequences to scale your customer acquisition</p>
-          </div>
-          <div className="flex items-center space-x-3">
-            <div className="bg-green-50 border border-green-200 rounded-lg px-4 py-2">
-              <div className="flex items-center text-sm">
-                <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                <span className="text-green-700 font-medium">System Active</span>
+            <h3 className="text-lg font-semibold text-yellow-900 mb-2">⚠️ Manual Outreach Tool - Compliance Required</h3>
+            <div className="text-sm text-yellow-800 space-y-2">
+              <p><strong>This tool is for organizing MANUAL outreach only.</strong> All communication must be done personally by you.</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                <div>
+                  <p className="font-medium">✅ What's Safe:</p>
+                  <ul className="list-disc list-inside text-xs space-y-1 mt-1">
+                    <li>Manual LinkedIn connections</li>
+                    <li>Personal email sending</li>
+                    <li>Lead tracking and notes</li>
+                    <li>Template organization</li>
+                  </ul>
+                </div>
+                <div>
+                  <p className="font-medium">❌ What's Prohibited:</p>
+                  <ul className="list-disc list-inside text-xs space-y-1 mt-1">
+                    <li>Automated LinkedIn actions</li>
+                    <li>Mass email automation</li>
+                    <li>Profile scraping tools</li>
+                    <li>Bulk connection requests</li>
+                  </ul>
+                </div>
               </div>
             </div>
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center text-sm">
-              <BoltIcon className="h-4 w-4 mr-2" />
-              Quick Setup
-            </button>
           </div>
         </div>
       </div>
 
-      {/* Stats Overview */}
+      {/* Header */}
+      <div className="bg-white rounded-xl shadow-lg border border-gray-200/50 p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-1">Manual Lead Management System</h2>
+            <p className="text-gray-600 text-sm">Organize and track your personal LinkedIn outreach for KALM AI customer acquisition</p>
+          </div>
+          <div className="flex items-center space-x-3">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2">
+              <div className="flex items-center text-sm">
+                <ShieldCheckIcon className="w-4 h-4 text-blue-600 mr-2" />
+                <span className="text-blue-700 font-medium">Compliance Safe</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Manual Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center">
@@ -256,8 +203,8 @@ P.S. Happy to send over the full case study if you're interested.`,
               <UserGroupIcon className="h-6 w-6 text-blue-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Total Leads</p>
-              <p className="text-2xl font-bold text-gray-900">1,247</p>
+              <p className="text-sm font-medium text-gray-600">Total Prospects</p>
+              <p className="text-2xl font-bold text-gray-900">{leads.length}</p>
             </div>
           </div>
         </div>
@@ -268,8 +215,9 @@ P.S. Happy to send over the full case study if you're interested.`,
               <EnvelopeIcon className="h-6 w-6 text-green-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Emails Sent Today</p>
-              <p className="text-2xl font-bold text-gray-900">23/50</p>
+              <p className="text-sm font-medium text-gray-600">Manual Outreach Today</p>
+              <p className="text-2xl font-bold text-gray-900">0/10</p>
+              <p className="text-xs text-gray-500">Daily goal</p>
             </div>
           </div>
         </div>
@@ -281,7 +229,8 @@ P.S. Happy to send over the full case study if you're interested.`,
             </div>
             <div className="ml-4">
               <p className="text-sm font-medium text-gray-600">Response Rate</p>
-              <p className="text-2xl font-bold text-gray-900">22.8%</p>
+              <p className="text-2xl font-bold text-gray-900">33%</p>
+              <p className="text-xs text-gray-500">Manual tracking</p>
             </div>
           </div>
         </div>
@@ -292,8 +241,8 @@ P.S. Happy to send over the full case study if you're interested.`,
               <UserPlusIcon className="h-6 w-6 text-yellow-600" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-gray-600">Conversions</p>
-              <p className="text-2xl font-bold text-gray-900">12</p>
+              <p className="text-sm font-medium text-gray-600">Demos Booked</p>
+              <p className="text-2xl font-bold text-gray-900">1</p>
             </div>
           </div>
         </div>
@@ -304,10 +253,10 @@ P.S. Happy to send over the full case study if you're interested.`,
         <div className="border-b border-gray-200">
           <nav className="flex space-x-8 px-6">
             {[
-              { id: 'leads', name: 'Lead Management', icon: UserGroupIcon },
-              { id: 'templates', name: 'Email Templates', icon: EnvelopeIcon },
-              { id: 'campaigns', name: 'Campaigns', icon: PlayIcon },
-              { id: 'analytics', name: 'Analytics', icon: ChartBarIcon }
+              { id: 'leads', name: 'Lead Tracking', icon: UserGroupIcon },
+              { id: 'templates', name: 'Message Templates', icon: DocumentTextIcon },
+              { id: 'tracking', name: 'Outreach Tracker', icon: ChartBarIcon },
+              { id: 'compliance', name: 'Compliance Guide', icon: ShieldCheckIcon }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -326,23 +275,22 @@ P.S. Happy to send over the full case study if you're interested.`,
         </div>
 
         <div className="p-6">
-          {/* Lead Management Tab */}
+          {/* Lead Tracking Tab */}
           {activeTab === 'leads' && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">Lead Management</h3>
-                <div className="flex items-center space-x-3">
-                  <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm">
-                    Import from LinkedIn
-                  </button>
-                  <button 
-                    onClick={() => setShowAddLead(true)}
-                    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm flex items-center"
-                  >
-                    <PlusIcon className="h-4 w-4 mr-2" />
-                    Add Lead
-                  </button>
-                </div>
+                <h3 className="text-lg font-semibold text-gray-900">Manual Lead Tracking</h3>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h4 className="font-medium text-blue-900 mb-2">💡 Manual LinkedIn Prospecting Tips</h4>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• Search LinkedIn for "VP Sales" + "SaaS" + "50-500 employees"</li>
+                  <li>• Send 5-10 personal connection requests daily</li>
+                  <li>• Wait 3-7 days after connection before messaging</li>
+                  <li>• Keep messages personalized and specific to their company</li>
+                  <li>• Track all interactions manually in this system</li>
+                </ul>
               </div>
 
               <div className="overflow-x-auto">
@@ -353,7 +301,7 @@ P.S. Happy to send over the full case study if you're interested.`,
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Score</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Added</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
@@ -391,18 +339,15 @@ P.S. Happy to send over the full case study if you're interested.`,
                             <span className="text-sm text-gray-900">{lead.score}</span>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(lead.addedDate).toLocaleDateString()}
+                        <td className="px-6 py-4 text-sm text-gray-600">
+                          <div className="max-w-xs truncate">{lead.notes}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                          <button className="text-blue-600 hover:text-blue-900">
-                            <EyeIcon className="h-4 w-4" />
+                          <button className="text-blue-600 hover:text-blue-900 text-xs">
+                            View LinkedIn
                           </button>
-                          <button className="text-green-600 hover:text-green-900">
-                            <EnvelopeIcon className="h-4 w-4" />
-                          </button>
-                          <button className="text-gray-600 hover:text-gray-900">
-                            <LinkIcon className="h-4 w-4" />
+                          <button className="text-green-600 hover:text-green-900 text-xs">
+                            Update Notes
                           </button>
                         </td>
                       </tr>
@@ -413,49 +358,33 @@ P.S. Happy to send over the full case study if you're interested.`,
             </div>
           )}
 
-          {/* Email Templates Tab */}
+          {/* Message Templates Tab */}
           {activeTab === 'templates' && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">Email Templates</h3>
-                <button 
-                  onClick={() => setShowAddTemplate(true)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm flex items-center"
-                >
-                  <PlusIcon className="h-4 w-4 mr-2" />
-                  Create Template
-                </button>
+                <h3 className="text-lg font-semibold text-gray-900">Message Templates (For Manual Use)</h3>
+              </div>
+
+              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                <h4 className="font-medium text-green-900 mb-2">📝 How to Use Templates</h4>
+                <ul className="text-sm text-green-800 space-y-1">
+                  <li>• Copy template content manually</li>
+                  <li>• Replace {{firstName}} and {{company}} with actual names</li>
+                  <li>• Personalize each message before sending</li>
+                  <li>• Send via LinkedIn or personal email client</li>
+                  <li>• Track responses manually in the system</li>
+                </ul>
               </div>
 
               <div className="grid gap-6">
                 {templates.map((template) => (
-                  <div key={template.id} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+                  <div key={template.id} className="border border-gray-200 rounded-lg p-6">
                     <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h4 className="text-lg font-medium text-gray-900">{template.name}</h4>
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                          {template.type.charAt(0).toUpperCase() + template.type.slice(1)}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
-                        <div className="text-center">
-                          <div className="font-medium text-gray-900">{template.openRate}%</div>
-                          <div>Open Rate</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="font-medium text-gray-900">{template.responseRate}%</div>
-                          <div>Response Rate</div>
-                        </div>
-                      </div>
+                      <h4 className="text-lg font-medium text-gray-900">{template.name}</h4>
                     </div>
-                    <div className="bg-gray-50 rounded-lg p-4">
+                    <div className="bg-gray-50 rounded-lg p-4 mb-4">
                       <div className="text-sm font-medium text-gray-900 mb-2">Subject: {template.subject}</div>
-                      <div className="text-sm text-gray-700 whitespace-pre-wrap">{template.content.substring(0, 200)}...</div>
-                    </div>
-                    <div className="mt-4 flex items-center space-x-3">
-                      <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">Edit</button>
-                      <button className="text-green-600 hover:text-green-800 text-sm font-medium">Duplicate</button>
-                      <button className="text-gray-600 hover:text-gray-800 text-sm font-medium">Preview</button>
+                      <div className="text-sm text-gray-700 whitespace-pre-wrap">{template.content}</div>
                     </div>
                   </div>
                 ))}
@@ -463,141 +392,128 @@ P.S. Happy to send over the full case study if you're interested.`,
             </div>
           )}
 
-          {/* Campaigns Tab */}
-          {activeTab === 'campaigns' && (
+          {/* Compliance Tab */}
+          {activeTab === 'compliance' && (
             <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">Email Campaigns</h3>
-                <button 
-                  onClick={() => setShowAddCampaign(true)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm flex items-center"
-                >
-                  <PlusIcon className="h-4 w-4 mr-2" />
-                  Create Campaign
-                </button>
-              </div>
-
-              <div className="space-y-4">
-                {campaigns.map((campaign) => (
-                  <div key={campaign.id} className="border border-gray-200 rounded-lg p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center space-x-4">
-                        <h4 className="text-lg font-medium text-gray-900">{campaign.name}</h4>
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getCampaignStatusColor(campaign.status)}`}>
-                          {campaign.status.charAt(0).toUpperCase() + campaign.status.slice(1)}
-                        </span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <button className="p-2 text-gray-600 hover:text-gray-800">
-                          <PlayIcon className="h-4 w-4" />
-                        </button>
-                        <button className="p-2 text-gray-600 hover:text-gray-800">
-                          <PauseIcon className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-gray-900">{campaign.totalSent}</div>
-                        <div className="text-sm text-gray-500">Total Sent</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-gray-900">{campaign.responses}</div>
-                        <div className="text-sm text-gray-500">Responses</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-gray-900">{campaign.conversions}</div>
-                        <div className="text-sm text-gray-500">Conversions</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-gray-900">{campaign.sentToday}/{campaign.dailyLimit}</div>
-                        <div className="text-sm text-gray-500">Today's Quota</div>
-                      </div>
-                      <div className="text-center">
-                        <div className="text-2xl font-bold text-gray-900">{Math.round((campaign.responses / campaign.totalSent) * 100)}%</div>
-                        <div className="text-sm text-gray-500">Response Rate</div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="text-sm text-gray-500">
-                        Created: {new Date(campaign.createdDate).toLocaleDateString()}
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        <button className="text-blue-600 hover:text-blue-800 text-sm font-medium">View Details</button>
-                        <button className="text-green-600 hover:text-green-800 text-sm font-medium">Edit</button>
-                        <button className="text-gray-600 hover:text-gray-800 text-sm font-medium">Clone</button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Analytics Tab */}
-          {activeTab === 'analytics' && (
-            <div className="space-y-6">
-              <h3 className="text-lg font-semibold text-gray-900">Campaign Analytics</h3>
+              <h3 className="text-lg font-semibold text-gray-900">LinkedIn & Email Compliance Guide</h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg p-6 text-white">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-blue-100">Total Leads Generated</p>
-                      <p className="text-3xl font-bold">1,247</p>
-                    </div>
-                    <UserGroupIcon className="h-12 w-12 text-blue-200" />
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-6">
+                  <h4 className="font-medium text-green-900 mb-4 flex items-center">
+                    <CheckCircleIcon className="h-5 w-5 mr-2" />
+                    Safe Manual Practices
+                  </h4>
+                  <ul className="text-sm text-green-800 space-y-2">
+                    <li>• Send 5-10 LinkedIn connections daily</li>
+                    <li>• Personalize every message</li>
+                    <li>• Wait 3-7 days between touchpoints</li>
+                    <li>• Use your personal LinkedIn account</li>
+                    <li>• Send emails from your business email</li>
+                    <li>• Include unsubscribe options</li>
+                    <li>• Respect "no" responses immediately</li>
+                    <li>• Keep detailed manual records</li>
+                  </ul>
                 </div>
 
-                <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-lg p-6 text-white">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-green-100">Conversion Rate</p>
-                      <p className="text-3xl font-bold">9.6%</p>
-                    </div>
-                    <ChartBarIcon className="h-12 w-12 text-green-200" />
+                <div className="bg-red-50 border border-red-200 rounded-lg p-6">
+                  <h4 className="font-medium text-red-900 mb-4 flex items-center">
+                    <XMarkIcon className="h-5 w-5 mr-2" />
+                    Prohibited Activities
+                  </h4>
+                  <ul className="text-sm text-red-800 space-y-2">
+                    <li>• Automated LinkedIn tools</li>
+                    <li>• Mass connection requests</li>
+                    <li>• Profile scraping software</li>
+                    <li>• Bulk email automation</li>
+                    <li>• Generic mass messaging</li>
+                    <li>• Ignoring opt-out requests</li>
+                    <li>• Using fake profiles</li>
+                    <li>• Exceeding LinkedIn limits</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <h4 className="font-medium text-blue-900 mb-4">📋 Recommended Tools for Manual Outreach</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-blue-800">
+                  <div>
+                    <p className="font-medium">LinkedIn Sales Navigator</p>
+                    <p>Advanced search and lead discovery</p>
+                  </div>
+                  <div>
+                    <p className="font-medium">Google Sheets/Excel</p>
+                    <p>Manual lead tracking and notes</p>
+                  </div>
+                  <div>
+                    <p className="font-medium">Personal Email Client</p>
+                    <p>Gmail, Outlook for direct emails</p>
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
 
-                <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg p-6 text-white">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-purple-100">Revenue Generated</p>
-                      <p className="text-3xl font-bold">$2,847</p>
-                    </div>
-                    <UserPlusIcon className="h-12 w-12 text-purple-200" />
+          {/* Tracking Tab */}
+          {activeTab === 'tracking' && (
+            <div className="space-y-6">
+              <h3 className="text-lg font-semibold text-gray-900">Manual Outreach Tracker</h3>
+              
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                <h4 className="font-medium text-blue-900 mb-4">📊 Track Your Daily Progress</h4>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-white rounded-lg p-4 border border-blue-200">
+                    <h5 className="font-medium text-gray-900 mb-2">Today's Goals</h5>
+                    <ul className="text-sm text-gray-700 space-y-1">
+                      <li>☐ 5 LinkedIn connection requests</li>
+                      <li>☐ 3 follow-up messages</li>
+                      <li>☐ Update lead notes</li>
+                      <li>☐ Research 10 new prospects</li>
+                    </ul>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 border border-blue-200">
+                    <h5 className="font-medium text-gray-900 mb-2">This Week</h5>
+                    <ul className="text-sm text-gray-700 space-y-1">
+                      <li>📞 2 Demo calls scheduled</li>
+                      <li>📧 15 Emails sent</li>
+                      <li>🤝 25 LinkedIn connections</li>
+                      <li>💬 8 Responses received</li>
+                    </ul>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 border border-blue-200">
+                    <h5 className="font-medium text-gray-900 mb-2">This Month</h5>
+                    <ul className="text-sm text-gray-700 space-y-1">
+                      <li>🎯 Goal: 10 demos</li>
+                      <li>📈 Progress: 6/10</li>
+                      <li>📊 Response rate: 32%</li>
+                      <li>💰 Potential value: $85k</li>
+                    </ul>
                   </div>
                 </div>
               </div>
 
               <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h4 className="text-lg font-medium text-gray-900 mb-4">Campaign Performance</h4>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Email Open Rate</span>
-                    <span className="text-sm font-medium text-gray-900">68.2%</span>
+                <h4 className="text-lg font-medium text-gray-900 mb-4">Daily Activity Log</h4>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <p className="font-medium text-gray-900">Connected with Sarah Mitchell</p>
+                      <p className="text-sm text-gray-600">VP of Sales at TechCorp - Sent personalized message</p>
+                    </div>
+                    <span className="text-xs text-gray-500">2 hours ago</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-blue-500 h-2 rounded-full" style={{ width: '68.2%' }}></div>
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <p className="font-medium text-gray-900">Follow-up email sent</p>
+                      <p className="text-sm text-gray-600">Mike Rodriguez - Case study shared</p>
+                    </div>
+                    <span className="text-xs text-gray-500">4 hours ago</span>
                   </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Response Rate</span>
-                    <span className="text-sm font-medium text-gray-900">22.8%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-green-500 h-2 rounded-full" style={{ width: '22.8%' }}></div>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-600">Conversion Rate</span>
-                    <span className="text-sm font-medium text-gray-900">9.6%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-purple-500 h-2 rounded-full" style={{ width: '9.6%' }}></div>
+                  <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                    <div>
+                      <p className="font-medium text-green-900">Demo scheduled! 🎉</p>
+                      <p className="text-sm text-green-700">Jennifer Chen - Next Tuesday 2PM</p>
+                    </div>
+                    <span className="text-xs text-gray-500">Yesterday</span>
                   </div>
                 </div>
               </div>
