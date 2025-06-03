@@ -63,6 +63,7 @@ function App() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisProgress, setAnalysisProgress] = useState(0);
   const [analysisStage, setAnalysisStage] = useState('');
+  const [selectedPlan, setSelectedPlan] = useState<any>(null);
 
   // Check for existing authentication on app load
   useEffect(() => {
@@ -140,6 +141,11 @@ function App() {
     } finally {
       setIsAnalyzing(false);
     }
+  };
+
+  const handleSelectPlan = (plan: any) => {
+    setSelectedPlan(plan);
+    setActiveTab('payment');
   };
 
   const tabs = [
@@ -408,7 +414,7 @@ function App() {
 
             {activeTab === 'pricing' && (
               <div className="animate-fade-in">
-                <PricingPage />
+                <PricingPage onSelectPlan={handleSelectPlan} />
               </div>
             )}
 
@@ -513,7 +519,13 @@ function App() {
                     </div>
                   </div>
                 </div>
-                <PaymentComponent />
+                <PaymentComponent 
+                  selectedPlan={selectedPlan}
+                  onSuccess={() => {
+                    setActiveTab('dashboard');
+                    setSelectedPlan(null);
+                  }}
+                />
               </div>
             )}
           </div>

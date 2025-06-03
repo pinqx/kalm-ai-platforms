@@ -17,13 +17,49 @@ interface PaymentFormProps {
   planId: string;
   onSuccess: () => void;
   onError: (error: string) => void;
+  onCancel?: () => void;
 }
 
-const PaymentForm: React.FC<PaymentFormProps> = ({ amount, planId, onSuccess, onError }) => {
+const PaymentForm: React.FC<PaymentFormProps> = ({ amount, planId, onSuccess, onError, onCancel }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [processing, setProcessing] = useState(false);
   const [clientSecret, setClientSecret] = useState('');
+
+  // TEMPORARY DEBUG DISPLAY
+  const debugInfo = {
+    amount: amount,
+    amountType: typeof amount,
+    planId: planId,
+    isNaN: isNaN(amount as any),
+    isUndefined: amount === undefined,
+    isNull: amount === null
+  };
+
+  // Safety check - if amount is undefined, don't proceed
+  if (!amount || isNaN(amount) || amount <= 0) {
+    return (
+      <div className="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-8">
+        <div className="text-center">
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <h3 className="text-lg font-semibold text-red-800 mb-2">Payment Error</h3>
+            <p className="text-red-700 mb-2">Invalid payment amount. Please go back and select a plan.</p>
+            <div className="text-xs text-red-600 font-mono bg-red-100 p-2 rounded mt-2">
+              DEBUG: {JSON.stringify(debugInfo, null, 2)}
+            </div>
+          </div>
+          {onCancel && (
+            <button
+              onClick={onCancel}
+              className="w-full py-3 px-4 rounded-lg font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+            >
+              ← Back to Plans
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     // Create payment intent when component mounts
@@ -33,7 +69,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, planId, onSuccess, on
   const createPaymentIntent = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(getApiUrl('/api/payment/create-intent'), {
+      const response = await fetch(`${getApiUrl()}/api/payment/create-intent`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -89,7 +125,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, planId, onSuccess, on
       if (paymentIntent?.status === 'succeeded') {
         // Confirm payment on backend
         const token = localStorage.getItem('token');
-        const confirmResponse = await fetch(getApiUrl('/api/payment/confirm'), {
+        const confirmResponse = await fetch(`${getApiUrl()}/api/payment/confirm`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -171,6 +207,16 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, planId, onSuccess, on
               `Pay $${amount}/month`
             )}
           </button>
+          
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="w-full py-3 px-4 rounded-lg font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+            >
+              ← Back to Plans
+            </button>
+          )}
         </div>
       </form>
     </div>

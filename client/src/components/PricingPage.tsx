@@ -3,6 +3,7 @@ import { CheckIcon, XMarkIcon, StarIcon, SparklesIcon, CurrencyDollarIcon, Users
 
 const plans = [
   {
+    id: 'starter',
     name: 'Starter',
     price: 29,
     description: 'Perfect for individual sales reps',
@@ -24,6 +25,7 @@ const plans = [
     popular: false,
   },
   {
+    id: 'professional',
     name: 'Professional',
     price: 79,
     description: 'Best for growing sales teams',
@@ -47,6 +49,7 @@ const plans = [
     popular: true,
   },
   {
+    id: 'enterprise',
     name: 'Enterprise',
     price: 149,
     description: 'For large sales organizations',
@@ -67,7 +70,11 @@ const plans = [
   },
 ];
 
-export default function PricingPage() {
+interface PricingPageProps {
+  onSelectPlan?: (plan: typeof plans[0]) => void;
+}
+
+export default function PricingPage({ onSelectPlan }: PricingPageProps) {
   return (
     <div className="bg-gradient-to-br from-gray-50 via-white to-blue-50 py-24 sm:py-32 overflow-hidden">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -146,6 +153,7 @@ export default function PricingPage() {
                       ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700'
                       : 'bg-gradient-to-r from-gray-800 to-gray-900 text-white hover:from-gray-700 hover:to-gray-800'
                   }`}
+                  onClick={() => onSelectPlan?.(plan)}
                 >
                   Start Free Trial
                 </button>

@@ -16,14 +16,14 @@ interface PricingPlan {
 interface PaymentComponentProps {
   onSuccess?: (planId: string) => void;
   currentUser?: any;
+  selectedPlan?: PricingPlan;
 }
 
-const PaymentComponent: React.FC<PaymentComponentProps> = ({ onSuccess, currentUser }) => {
-  const [selectedPlan, setSelectedPlan] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [showPaymentForm, setShowPaymentForm] = useState(false);
+const PaymentComponent: React.FC<PaymentComponentProps> = ({ onSuccess, currentUser, selectedPlan }) => {
+  const [selectedPlanForPayment, setSelectedPlanForPayment] = useState<PricingPlan | null>(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
+  // Always use these hardcoded plans to ensure consistent data
   const plans: PricingPlan[] = [
     {
       id: 'starter',
@@ -84,32 +84,36 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({ onSuccess, currentU
     }
   ];
 
-  const handlePlanSelect = (planId: string) => {
-    setSelectedPlan(planId);
-    setShowPaymentForm(true);
+  // If a plan was pre-selected from pricing page, use it immediately
+  useEffect(() => {
+    if (selectedPlan && selectedPlan.id && selectedPlan.price) {
+      // Find matching plan from our hardcoded list to ensure consistency
+      const matchingPlan = plans.find(p => p.id === selectedPlan.id);
+      if (matchingPlan) {
+        setSelectedPlanForPayment(matchingPlan);
+      }
+    }
+  }, [selectedPlan]);
+
+  const handlePlanSelect = (plan: PricingPlan) => {
+    setSelectedPlanForPayment(plan);
   };
 
-  const handlePaymentSuccess = (result: any) => {
-    console.log('Payment succeeded:', result);
+  const handlePaymentSuccess = () => {
     setPaymentSuccess(true);
-    setShowPaymentForm(false);
-    
-    const selectedPlanData = plans.find(plan => plan.id === selectedPlan);
-    
-    if (onSuccess) {
-      onSuccess(selectedPlan);
+    if (onSuccess && selectedPlanForPayment) {
+      onSuccess(selectedPlanForPayment.id);
     }
     
-    // Show success message for a bit, then reset
+    // Reset after showing success
     setTimeout(() => {
       setPaymentSuccess(false);
-      setSelectedPlan('');
+      setSelectedPlanForPayment(null);
     }, 3000);
   };
 
-  const handlePaymentCancel = () => {
-    setShowPaymentForm(false);
-    setSelectedPlan('');
+  const handleBackToPlans = () => {
+    setSelectedPlanForPayment(null);
   };
 
   const formatCardNumber = (value: string) => {
@@ -135,7 +139,7 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({ onSuccess, currentU
             <CheckIcon className="h-16 w-16 text-green-500 mx-auto mb-4" />
             <h2 className="text-3xl font-bold text-gray-900 mb-4">Payment Successful!</h2>
             <p className="text-lg text-gray-600 mb-6">
-              Welcome to the {plans.find(p => p.id === selectedPlan)?.name} plan!
+              Welcome to the {selectedPlanForPayment?.name} plan!
             </p>
             <p className="text-sm text-gray-500">
               You'll receive a confirmation email shortly. Your subscription is now active.
@@ -146,17 +150,27 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({ onSuccess, currentU
     );
   }
 
-  if (showPaymentForm && selectedPlan) {
-    const plan = plans.find(p => p.id === selectedPlan);
-    if (!plan) return null;
-
+  if (selectedPlanForPayment) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-16 px-4">
-        <StripePaymentForm
-          plan={plan}
-          onSuccess={handlePaymentSuccess}
-          onCancel={handlePaymentCancel}
-        />
+        <div className="max-w-md mx-auto">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Complete Your Purchase</h2>
+            <div className="text-lg text-gray-600">
+              {selectedPlanForPayment.name} Plan - ${selectedPlanForPayment.price}/month
+            </div>
+          </div>
+          <StripePaymentForm
+            amount={selectedPlanForPayment.price}
+            planId={selectedPlanForPayment.id}
+            onSuccess={handlePaymentSuccess}
+            onError={(error) => {
+              console.error('Payment error:', error);
+              handleBackToPlans();
+            }}
+            onCancel={handleBackToPlans}
+          />
+        </div>
       </div>
     );
   }
@@ -164,6 +178,17 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({ onSuccess, currentU
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-16 px-4">
       <div className="max-w-7xl mx-auto">
+        {/* Show message if no plan selected */}
+        {!selectedPlanForPayment && (
+          <div className="text-center mb-8">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <p className="text-blue-800">
+                <strong>Choose your plan below to continue with payment</strong>
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Header */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium mb-6">
@@ -215,7 +240,7 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({ onSuccess, currentU
               </ul>
 
               <button
-                onClick={() => handlePlanSelect(plan.id)}
+                onClick={() => handlePlanSelect(plan)}
                 className={`w-full py-4 px-6 rounded-xl font-semibold transition-all duration-200 ${
                   plan.recommended
                     ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl'
