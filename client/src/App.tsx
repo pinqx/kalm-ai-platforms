@@ -14,6 +14,7 @@ import PaymentTester from './components/PaymentTester'
 import AdminDashboard from './components/AdminDashboard'
 import UsageDashboard from './components/UsageDashboard'
 import AdminLogin from './components/AdminLogin'
+import LeadGeneration from './components/LeadGeneration'
 import { 
   DocumentTextIcon, 
   EnvelopeIcon, 
@@ -53,7 +54,7 @@ interface TranscriptAnalysis {
   transcriptionConfidence?: number;
 }
 
-type ActiveTab = 'home' | 'upload' | 'email' | 'chat' | 'dashboard' | 'history' | 'pricing' | 'realtime' | 'collaboration' | 'advanced-analytics' | 'admin' | 'usage';
+type ActiveTab = 'home' | 'upload' | 'email' | 'chat' | 'dashboard' | 'history' | 'pricing' | 'realtime' | 'collaboration' | 'advanced-analytics' | 'admin' | 'usage' | 'lead-generation';
 
 function App() {
   const [analysis, setAnalysis] = useState<TranscriptAnalysis | null>(null);
@@ -192,6 +193,7 @@ function App() {
     { id: 'advanced-analytics', name: 'Advanced Analytics', icon: TrophyIcon, color: 'purple' },
     { id: 'usage', name: 'Usage', icon: ChartBarIcon, color: 'yellow' },
     { id: 'admin', name: 'Admin', icon: Cog6ToothIcon, color: 'red' }, // Admin tab
+    { id: 'lead-generation', name: 'Lead Generation', icon: SparklesIcon, color: 'teal' },
   ];
 
   // Filter tabs based on user role
@@ -594,6 +596,27 @@ function App() {
                   </div>
                 </div>
                 <UsageDashboard />
+              </div>
+            )}
+
+            {activeTab === 'lead-generation' && (
+              <div className="space-y-6 animate-fade-in">
+                <div className="bg-white rounded-xl shadow-lg border border-gray-200/50 p-6">
+                  <div className="flex items-center mb-4">
+                    <div className="w-10 h-10 bg-gradient-to-r from-teal-500 to-lime-600 rounded-lg flex items-center justify-center mr-3">
+                      <SparklesIcon className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900 mb-1">
+                        Lead Generation
+                      </h2>
+                      <p className="text-gray-600 text-sm">
+                        Generate leads and opportunities from your sales conversations.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <LeadGeneration />
               </div>
             )}
           </div>
