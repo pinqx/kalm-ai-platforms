@@ -125,11 +125,6 @@ function App() {
     setActiveTab('upload');
   };
 
-  const handleViewDemo = () => {
-    setActiveTab('upload');
-    // You could set some demo data here
-  };
-
   const handleAdminLogin = (userData: any, authToken: string) => {
     setUser(userData);
     setToken(authToken);
@@ -240,7 +235,10 @@ function App() {
                 <SparklesIcon className="h-10 w-10 text-blue-600 mr-4 transform group-hover:scale-110 transition-transform duration-200" />
                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
               </div>
-              <div className="flex flex-col">
+              <button 
+                onClick={() => setActiveTab('home')}
+                className="flex flex-col hover:opacity-80 transition-opacity duration-200"
+              >
                 <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                   KALM
                 </h1>
@@ -250,7 +248,7 @@ function App() {
                     Pro
                   </span>
                 </div>
-              </div>
+              </button>
             </div>
             
             <div className="flex items-center space-x-6">
@@ -351,36 +349,35 @@ function App() {
       {activeTab === 'home' ? (
         <LandingPage 
           onGetStarted={handleGetStarted}
-          onViewDemo={handleViewDemo}
         />
       ) : (
-        <main className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+        <main className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
           <div className="transition-all duration-300 ease-in-out">
             {activeTab === 'upload' && (
-              <div className="space-y-8 animate-fade-in">
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-200/50 p-8">
-                  <div className="flex items-center mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center mr-4">
-                      <DocumentTextIcon className="h-6 w-6 text-white" />
+              <div className="space-y-6 animate-fade-in">
+                <div className="bg-white rounded-xl shadow-lg border border-gray-200/50 p-6">
+                  <div className="flex items-center mb-4">
+                    <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
+                      <DocumentTextIcon className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                      <h2 className="text-2xl font-bold text-gray-900 mb-1">
                         Upload & Analyze Sales Transcripts
                       </h2>
-                      <p className="text-gray-600 text-lg">
+                      <p className="text-gray-600 text-sm">
                         Upload your call recordings or transcripts to get AI-powered insights, objection analysis, and next-step recommendations.
                       </p>
                     </div>
                   </div>
                   {!user && (
-                    <div className="mb-6 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl">
+                    <div className="mb-4 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg">
                       <div className="flex items-start">
-                        <SparklesIcon className="h-6 w-6 text-blue-600 mr-3 mt-0.5" />
+                        <SparklesIcon className="h-5 w-5 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
                         <div>
-                          <p className="text-blue-800 font-medium mb-1">
+                          <p className="text-blue-800 font-medium mb-1 text-sm">
                             💡 Sign in to unlock the full power of AI analysis!
                           </p>
-                          <p className="text-blue-700 text-sm">
+                          <p className="text-blue-700 text-xs">
                             Create an account to access transcript history, advanced analytics, team collaboration features, and more.
                           </p>
                         </div>
@@ -399,17 +396,17 @@ function App() {
             )}
 
             {activeTab === 'email' && (
-              <div className="space-y-8 animate-fade-in">
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-200/50 p-8">
-                  <div className="flex items-center mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mr-4">
-                      <EnvelopeIcon className="h-6 w-6 text-white" />
+              <div className="space-y-6 animate-fade-in">
+                <div className="bg-white rounded-xl shadow-lg border border-gray-200/50 p-6">
+                  <div className="flex items-center mb-4">
+                    <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg flex items-center justify-center mr-3">
+                      <EnvelopeIcon className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                      <h2 className="text-2xl font-bold text-gray-900 mb-1">
                         Personalized Email Generator
                       </h2>
-                      <p className="text-gray-600 text-lg">
+                      <p className="text-gray-600 text-sm">
                         Generate tailored follow-up emails, proposals, and objection-handling messages based on your transcript analysis.
                       </p>
                     </div>
@@ -420,17 +417,17 @@ function App() {
             )}
 
             {activeTab === 'chat' && (
-              <div className="space-y-8 animate-fade-in">
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-200/50 p-8">
-                  <div className="flex items-center mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl flex items-center justify-center mr-4">
-                      <ChatBubbleLeftRightIcon className="h-6 w-6 text-white" />
+              <div className="space-y-6 animate-fade-in">
+                <div className="bg-white rounded-xl shadow-lg border border-gray-200/50 p-6">
+                  <div className="flex items-center mb-4">
+                    <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg flex items-center justify-center mr-3">
+                      <ChatBubbleLeftRightIcon className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                      <h2 className="text-2xl font-bold text-gray-900 mb-1">
                         AI Sales Assistant
                       </h2>
-                      <p className="text-gray-600 text-lg">
+                      <p className="text-gray-600 text-sm">
                         Chat with your AI assistant to get strategic advice, objection handling tips, and next-step recommendations.
                       </p>
                     </div>
@@ -441,17 +438,17 @@ function App() {
             )}
 
             {activeTab === 'history' && (
-              <div className="space-y-8 animate-fade-in">
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-200/50 p-8">
-                  <div className="flex items-center mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-r from-red-500 to-orange-600 rounded-xl flex items-center justify-center mr-4">
-                      <ClockIcon className="h-6 w-6 text-white" />
+              <div className="space-y-6 animate-fade-in">
+                <div className="bg-white rounded-xl shadow-lg border border-gray-200/50 p-6">
+                  <div className="flex items-center mb-4">
+                    <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-orange-600 rounded-lg flex items-center justify-center mr-3">
+                      <ClockIcon className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                      <h2 className="text-2xl font-bold text-gray-900 mb-1">
                         Transcript History
                       </h2>
-                      <p className="text-gray-600 text-lg">
+                      <p className="text-gray-600 text-sm">
                         Review your previous analyses and track your progress over time.
                       </p>
                     </div>
@@ -472,17 +469,17 @@ function App() {
             )}
 
             {activeTab === 'dashboard' && (
-              <div className="space-y-8 animate-fade-in">
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-200/50 p-8">
-                  <div className="flex items-center mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-xl flex items-center justify-center mr-4">
-                      <ChartBarIcon className="h-6 w-6 text-white" />
+              <div className="space-y-6 animate-fade-in">
+                <div className="bg-white rounded-xl shadow-lg border border-gray-200/50 p-6">
+                  <div className="flex items-center mb-4">
+                    <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-lg flex items-center justify-center mr-3">
+                      <ChartBarIcon className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                      <h2 className="text-2xl font-bold text-gray-900 mb-1">
                         Analytics Dashboard
                       </h2>
-                      <p className="text-gray-600 text-lg">
+                      <p className="text-gray-600 text-sm">
                         Comprehensive insights from your sales conversation analysis.
                       </p>
                     </div>
@@ -493,17 +490,17 @@ function App() {
             )}
 
             {activeTab === 'realtime' && (
-              <div className="space-y-8 animate-fade-in">
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-200/50 p-8">
-                  <div className="flex items-center mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center mr-4">
-                      <BoltIcon className="h-6 w-6 text-white" />
+              <div className="space-y-6 animate-fade-in">
+                <div className="bg-white rounded-xl shadow-lg border border-gray-200/50 p-6">
+                  <div className="flex items-center mb-4">
+                    <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center mr-3">
+                      <BoltIcon className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                      <h2 className="text-2xl font-bold text-gray-900 mb-1">
                         Realtime Dashboard
                       </h2>
-                      <p className="text-gray-600 text-lg">
+                      <p className="text-gray-600 text-sm">
                         Live insights from your sales conversation analysis.
                       </p>
                     </div>
@@ -514,17 +511,17 @@ function App() {
             )}
 
             {activeTab === 'collaboration' && (
-              <div className="space-y-8 animate-fade-in">
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-200/50 p-8">
-                  <div className="flex items-center mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-r from-teal-500 to-lime-600 rounded-xl flex items-center justify-center mr-4">
-                      <UsersIcon className="h-6 w-6 text-white" />
+              <div className="space-y-6 animate-fade-in">
+                <div className="bg-white rounded-xl shadow-lg border border-gray-200/50 p-6">
+                  <div className="flex items-center mb-4">
+                    <div className="w-10 h-10 bg-gradient-to-r from-teal-500 to-lime-600 rounded-lg flex items-center justify-center mr-3">
+                      <UsersIcon className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                      <h2 className="text-2xl font-bold text-gray-900 mb-1">
                         Collaboration
                       </h2>
-                      <p className="text-gray-600 text-lg">
+                      <p className="text-gray-600 text-sm">
                         Collaborate with your team on sales conversations and analysis.
                       </p>
                     </div>
@@ -535,17 +532,17 @@ function App() {
             )}
 
             {activeTab === 'advanced-analytics' && (
-              <div className="space-y-8 animate-fade-in">
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-200/50 p-8">
-                  <div className="flex items-center mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl flex items-center justify-center mr-4">
-                      <TrophyIcon className="h-6 w-6 text-white" />
+              <div className="space-y-6 animate-fade-in">
+                <div className="bg-white rounded-xl shadow-lg border border-gray-200/50 p-6">
+                  <div className="flex items-center mb-4">
+                    <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-600 rounded-lg flex items-center justify-center mr-3">
+                      <TrophyIcon className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                      <h2 className="text-2xl font-bold text-gray-900 mb-1">
                         Advanced Analytics
                       </h2>
-                      <p className="text-gray-600 text-lg">
+                      <p className="text-gray-600 text-sm">
                         Advanced analytics and insights from your sales conversation analysis.
                       </p>
                     </div>
@@ -556,17 +553,17 @@ function App() {
             )}
 
             {activeTab === 'admin' && (
-              <div className="space-y-8 animate-fade-in">
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-200/50 p-8">
-                  <div className="flex items-center mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-r from-teal-500 to-lime-600 rounded-xl flex items-center justify-center mr-4">
-                      <Cog6ToothIcon className="h-6 w-6 text-white" />
+              <div className="space-y-6 animate-fade-in">
+                <div className="bg-white rounded-xl shadow-lg border border-gray-200/50 p-6">
+                  <div className="flex items-center mb-4">
+                    <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-pink-600 rounded-lg flex items-center justify-center mr-3">
+                      <Cog6ToothIcon className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                      <h2 className="text-2xl font-bold text-gray-900 mb-1">
                         Admin Dashboard
                       </h2>
-                      <p className="text-gray-600 text-lg">
+                      <p className="text-gray-600 text-sm">
                         Manage and monitor system activities.
                       </p>
                     </div>
@@ -577,17 +574,17 @@ function App() {
             )}
 
             {activeTab === 'usage' && (
-              <div className="space-y-8 animate-fade-in">
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-200/50 p-8">
-                  <div className="flex items-center mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-xl flex items-center justify-center mr-4">
-                      <ChartBarIcon className="h-6 w-6 text-white" />
+              <div className="space-y-6 animate-fade-in">
+                <div className="bg-white rounded-xl shadow-lg border border-gray-200/50 p-6">
+                  <div className="flex items-center mb-4">
+                    <div className="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-lg flex items-center justify-center mr-3">
+                      <ChartBarIcon className="h-5 w-5 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                      <h2 className="text-2xl font-bold text-gray-900 mb-1">
                         Usage Dashboard
                       </h2>
-                      <p className="text-gray-600 text-lg">
+                      <p className="text-gray-600 text-sm">
                         Track usage and performance metrics.
                       </p>
                     </div>

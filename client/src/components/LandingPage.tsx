@@ -14,10 +14,9 @@ import {
 
 interface LandingPageProps {
   onGetStarted: () => void;
-  onViewDemo: () => void;
 }
 
-export default function LandingPage({ onGetStarted, onViewDemo }: LandingPageProps) {
+export default function LandingPage({ onGetStarted }: LandingPageProps) {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -153,13 +152,6 @@ export default function LandingPage({ onGetStarted, onViewDemo }: LandingPagePro
               >
                 Start Free Trial
                 <ArrowRightIcon className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform duration-200" />
-              </button>
-              <button
-                onClick={onViewDemo}
-                className="group bg-white/20 backdrop-blur-sm text-white px-10 py-4 rounded-xl font-bold text-lg hover:bg-white/30 transition-all duration-300 flex items-center justify-center border border-white/30 transform hover:scale-105"
-              >
-                <PlayIcon className="mr-3 h-6 w-6 group-hover:scale-110 transition-transform duration-200" />
-                Watch Demo
               </button>
             </div>
             <p className="text-blue-200 text-sm mt-6 animate-fade-in" style={{ animationDelay: '0.3s' }}>
