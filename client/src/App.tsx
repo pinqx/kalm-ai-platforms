@@ -14,6 +14,7 @@ import RealtimeDashboard from './components/RealtimeDashboard'
 import PaymentTester from './components/PaymentTester'
 import AdminDashboard from './components/AdminDashboard'
 import UsageDashboard from './components/UsageDashboard'
+import AdminLogin from './components/AdminLogin'
 import { 
   DocumentTextIcon, 
   EnvelopeIcon, 
@@ -66,6 +67,7 @@ function App() {
   const [analysisProgress, setAnalysisProgress] = useState(0);
   const [analysisStage, setAnalysisStage] = useState('');
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
 
   // Check for existing authentication on app load
   useEffect(() => {
@@ -112,6 +114,13 @@ function App() {
   const handleViewDemo = () => {
     setActiveTab('upload');
     // You could set some demo data here
+  };
+
+  const handleAdminLogin = (userData: any, authToken: string) => {
+    setUser(userData);
+    setToken(authToken);
+    setShowAdminLogin(false);
+    setActiveTab('admin'); // Go directly to admin tab
   };
 
   const handleAnalyze = async (formData: FormData) => {
@@ -288,6 +297,14 @@ function App() {
                   Sign In
                 </button>
               )}
+              
+              {/* Admin Access Button */}
+              <button
+                onClick={() => setShowAdminLogin(true)}
+                className="bg-gradient-to-r from-red-600 to-pink-600 text-white px-4 py-2 rounded-lg hover:from-red-700 hover:to-pink-700 text-xs font-medium shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                Admin
+              </button>
             </div>
           </div>
         </div>
@@ -604,6 +621,13 @@ function App() {
         onClose={() => setShowAuthModal(false)}
         onAuth={handleAuth}
       />
+
+      {/* Admin Login Modal */}
+      {showAdminLogin && (
+        <AdminLogin
+          onAdminLogin={handleAdminLogin}
+        />
+      )}
 
       {/* Development Payment Tester */}
       {process.env.NODE_ENV === 'development' && <PaymentTester />}
