@@ -21,6 +21,8 @@ interface PaymentFormProps {
 }
 
 const PaymentForm: React.FC<PaymentFormProps> = ({ amount, planId, onSuccess, onError, onCancel }) => {
+  console.log('StripePaymentForm received:', { amount, planId, amountType: typeof amount });
+  
   const stripe = useStripe();
   const elements = useElements();
   const [processing, setProcessing] = useState(false);
@@ -33,11 +35,16 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, planId, onSuccess, on
     planId: planId,
     isNaN: isNaN(amount as any),
     isUndefined: amount === undefined,
-    isNull: amount === null
+    isNull: amount === null,
+    isNumber: typeof amount === 'number',
+    amountGreaterThanZero: amount > 0
   };
+
+  console.log('StripePaymentForm debug info:', debugInfo);
 
   // Safety check - if amount is undefined, don't proceed
   if (!amount || isNaN(amount) || amount <= 0) {
+    console.log('StripePaymentForm: Amount validation failed, showing error');
     return (
       <div className="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-8">
         <div className="text-center">
@@ -60,6 +67,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, planId, onSuccess, on
       </div>
     );
   }
+
+  console.log('StripePaymentForm: Amount validation passed, rendering payment form');
 
   useEffect(() => {
     // Create payment intent when component mounts
