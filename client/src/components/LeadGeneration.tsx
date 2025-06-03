@@ -365,10 +365,16 @@ KALM AI`,
                           <div className="max-w-xs truncate">{lead.notes}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                          <button className="text-blue-600 hover:text-blue-900 text-xs">
+                          <button 
+                            onClick={() => window.open(lead.linkedinUrl, '_blank')}
+                            className="text-blue-600 hover:text-blue-900 text-xs hover:underline"
+                          >
                             View LinkedIn
                           </button>
-                          <button className="text-green-600 hover:text-green-900 text-xs">
+                          <button 
+                            onClick={() => alert(`Update notes for ${lead.name}\n\nCurrent notes: ${lead.notes}\n\n(In a real app, this would open an edit modal)`)}
+                            className="text-green-600 hover:text-green-900 text-xs hover:underline"
+                          >
                             Update Notes
                           </button>
                         </td>
@@ -403,6 +409,15 @@ KALM AI`,
                   <div key={template.id} className="border border-gray-200 rounded-lg p-6">
                     <div className="flex items-center justify-between mb-4">
                       <h4 className="text-lg font-medium text-gray-900">{template.name}</h4>
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(template.content);
+                          alert('Template copied to clipboard! Remember to replace [FIRST NAME] and [COMPANY NAME] with actual values.');
+                        }}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium transition-colors duration-200"
+                      >
+                        📋 Copy Template
+                      </button>
                     </div>
                     <div className="bg-gray-50 rounded-lg p-4 mb-4">
                       <div className="text-sm font-medium text-gray-900 mb-2">Subject: {template.subject}</div>
