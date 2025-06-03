@@ -2844,4 +2844,21 @@ function generateUpgradeSuggestions(currentPlan, usageStats) {
   return suggestions;
 }
 
+// Debug endpoint for testing authentication
+app.get('/api/debug/auth', authenticateToken, asyncHandler(async (req, res) => {
+  res.json({
+    message: 'Authentication successful',
+    user: {
+      id: req.user.id || req.user._id,
+      email: req.user.email,
+      firstName: req.user.firstName,
+      lastName: req.user.lastName,
+      fullName: req.user.fullName,
+      role: req.user.role,
+      subscription: req.user.subscription
+    },
+    timestamp: new Date().toISOString()
+  });
+}));
+
 module.exports = { app, server, io };
