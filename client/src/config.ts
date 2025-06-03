@@ -2,13 +2,9 @@
 const isDevelopment = import.meta.env.MODE === 'development';
 
 export const API_CONFIG = {
-  BASE_URL: isDevelopment 
-    ? 'http://localhost:3007'
-    : import.meta.env.VITE_API_URL || 'https://web-production-e7159.up.railway.app',
+  BASE_URL: 'https://web-production-e7159.up.railway.app', // Always use Railway for now
   
-  WS_URL: isDevelopment 
-    ? 'http://localhost:3007'
-    : import.meta.env.VITE_WS_URL || 'wss://web-production-e7159.up.railway.app'
+  WS_URL: 'wss://web-production-e7159.up.railway.app'
 };
 
 // Helper function to get API URL
