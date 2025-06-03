@@ -59,7 +59,12 @@ const checkTranscriptLimits = async (req, res, next) => {
     const user = req.user;
     
     // Admin emails get unlimited access
-    const adminEmails = ['alexfisher@mac.home', 'alexfisher.dev@gmail.com'];
+    const adminEmails = [
+      'alexfisher@mac.home', 
+      'alexfisher.dev@gmail.com',
+      'alex@kalm.live',
+      'admin@kalm.live'
+    ];
     if (user.email && adminEmails.includes(user.email)) {
       console.log(`✅ Admin access granted for ${user.email}`);
       return next(); // Skip all limits for admin
@@ -159,7 +164,12 @@ const checkFeatureAccess = (feature) => {
       const user = req.user;
       
       // Admin emails get access to all features
-      const adminEmails = ['alexfisher@mac.home', 'alexfisher.dev@gmail.com'];
+      const adminEmails = [
+        'alexfisher@mac.home', 
+        'alexfisher.dev@gmail.com',
+        'alex@kalm.live',
+        'admin@kalm.live'
+      ];
       if (user.email && adminEmails.includes(user.email)) {
         console.log(`✅ Admin feature access granted for ${user.email}: ${feature}`);
         return next(); // Skip all feature restrictions for admin

@@ -2573,7 +2573,12 @@ app.get('/api/usage/stats',
       const userId = req.user.id || req.user._id;
       
       // Admin emails get enterprise-level access
-      const adminEmails = ['alexfisher@mac.home', 'alexfisher.dev@gmail.com'];
+      const adminEmails = [
+        'alexfisher@mac.home', 
+        'alexfisher.dev@gmail.com',
+        'alex@kalm.live',
+        'admin@kalm.live'
+      ];
       if (req.user.email && adminEmails.includes(req.user.email)) {
         console.log(`✅ Admin usage stats access for ${req.user.email}`);
         
@@ -2649,7 +2654,12 @@ app.get('/api/admin/users',
   asyncHandler(async (req, res) => {
     try {
       // Check if user is admin based on email
-      const adminEmails = ['alexfisher@mac.home', 'alexfisher.dev@gmail.com'];
+      const adminEmails = [
+        'alexfisher@mac.home', 
+        'alexfisher.dev@gmail.com',
+        'alex@kalm.live',
+        'admin@kalm.live'
+      ];
       if (!req.user.email || !adminEmails.includes(req.user.email)) {
         return res.status(403).json({ 
           error: 'Access denied. Admin privileges required.',

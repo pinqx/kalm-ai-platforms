@@ -152,7 +152,13 @@ function App() {
 
   // Check if current user is admin
   const isAdmin = (user: any) => {
-    const adminEmails = ['alexfisher@mac.home', 'alexfisher.dev@gmail.com']; // Add your email here
+    const adminEmails = [
+      'alexfisher@mac.home', 
+      'alexfisher.dev@gmail.com',
+      'alex@kalm.live',
+      'admin@kalm.live',
+      // Add your actual email here
+    ];
     return user && adminEmails.includes(user.email);
   };
 
