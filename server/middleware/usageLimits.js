@@ -64,8 +64,11 @@ const checkTranscriptLimits = async (req, res, next) => {
       'alexfisher.dev@gmail.com',
       'alex@kalm.live',
       'admin@kalm.live'
-    ];
-    if (user.email && adminEmails.includes(user.email)) {
+    ].map(email => email.toLowerCase()); // Normalize admin emails
+    
+    const userEmail = user.email?.toLowerCase(); // Normalize user email
+    
+    if (userEmail && adminEmails.includes(userEmail)) {
       console.log(`✅ Admin access granted for ${user.email}`);
       return next(); // Skip all limits for admin
     }
@@ -169,8 +172,11 @@ const checkFeatureAccess = (feature) => {
         'alexfisher.dev@gmail.com',
         'alex@kalm.live',
         'admin@kalm.live'
-      ];
-      if (user.email && adminEmails.includes(user.email)) {
+      ].map(email => email.toLowerCase()); // Normalize admin emails
+      
+      const userEmail = user.email?.toLowerCase(); // Normalize user email
+      
+      if (userEmail && adminEmails.includes(userEmail)) {
         console.log(`✅ Admin feature access granted for ${user.email}: ${feature}`);
         return next(); // Skip all feature restrictions for admin
       }

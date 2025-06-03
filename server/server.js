@@ -2572,14 +2572,24 @@ app.get('/api/usage/stats',
     try {
       const userId = req.user.id || req.user._id;
       
+      // Debug logging
+      console.log('🔍 Usage stats request:', {
+        userObject: req.user,
+        email: req.user?.email,
+        userId: userId
+      });
+      
       // Admin emails get enterprise-level access
       const adminEmails = [
         'alexfisher@mac.home', 
         'alexfisher.dev@gmail.com',
         'alex@kalm.live',
         'admin@kalm.live'
-      ];
-      if (req.user.email && adminEmails.includes(req.user.email)) {
+      ].map(email => email.toLowerCase()); // Normalize admin emails
+      
+      const userEmail = req.user?.email?.toLowerCase(); // Normalize user email
+      
+      if (req.user.email && adminEmails.includes(userEmail)) {
         console.log(`✅ Admin usage stats access for ${req.user.email}`);
         
         const usageStats = await getUserUsageStats(userId);
@@ -2653,17 +2663,39 @@ app.get('/api/admin/users',
   authenticateToken,
   asyncHandler(async (req, res) => {
     try {
+      // Debug logging
+      console.log('🔍 Admin access attempt:', {
+        userObject: req.user,
+        email: req.user?.email,
+        id: req.user?.id || req.user?._id
+      });
+      
       // Check if user is admin based on email
       const adminEmails = [
         'alexfisher@mac.home', 
         'alexfisher.dev@gmail.com',
         'alex@kalm.live',
         'admin@kalm.live'
-      ];
-      if (!req.user.email || !adminEmails.includes(req.user.email)) {
+      ].map(email => email.toLowerCase()); // Normalize admin emails
+      
+      const userEmail = req.user?.email?.toLowerCase(); // Normalize user email
+      
+      if (!req.user || !userEmail || !adminEmails.includes(userEmail)) {
+        console.log('❌ Admin access denied:', {
+          hasUser: !!req.user,
+          userEmail: userEmail,
+          normalizedAdminEmails: adminEmails,
+          isAdmin: userEmail ? adminEmails.includes(userEmail) : false
+        });
+        
         return res.status(403).json({ 
           error: 'Access denied. Admin privileges required.',
-          code: 'ADMIN_ACCESS_DENIED'
+          code: 'ADMIN_ACCESS_DENIED',
+          debug: {
+            userEmail: req.user?.email,
+            hasUser: !!req.user,
+            normalizedAdminEmails: adminEmails
+          }
         });
       }
       
