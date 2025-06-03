@@ -253,6 +253,28 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// ULTRA-SIMPLE health check - must be first and not depend on anything
+app.get('/health', (req, res) => {
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ 
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    uptime: Math.round(process.uptime()),
+    port: port,
+    host: '0.0.0.0'
+  }));
+});
+
+// Backup health endpoint
+app.get('/healthz', (req, res) => {
+  res.status(200).send('OK');
+});
+
+// Simple ping endpoint
+app.get('/ping', (req, res) => {
+  res.status(200).send('pong');
+});
+
 // Create uploads directory if it doesn't exist
 const uploadDir = process.env.UPLOAD_DIR || 'uploads/';
 (async () => {
@@ -409,18 +431,6 @@ app.get('/', (req, res) => {
     status: 'running',
     version: '2.0.0',
     timestamp: new Date().toISOString()
-  });
-});
-
-// Simple health check endpoint (prioritize reliability over features)
-app.get('/health', (req, res) => {
-  // Super simple health check that should always work
-  res.status(200).json({ 
-    status: 'ok', 
-    timestamp: new Date().toISOString(),
-    uptime: Math.round(process.uptime()),
-    port: port,
-    pid: process.pid
   });
 });
 
@@ -2339,11 +2349,12 @@ app.use(notFound); // 404 handler
 app.use(errorHandler); // Global error handler
 
 // Enhanced server startup
-server.listen(port, () => {
-  console.log(`🚀 AI Sales Platform Server running on http://localhost:${port}`);
-  console.log(`📋 Health check: http://localhost:${port}/health`);
-  console.log(`📊 System metrics: http://localhost:${port}/api/system/metrics`);
+server.listen(port, '0.0.0.0', () => {
+  console.log(`🚀 AI Sales Platform Server running on http://0.0.0.0:${port}`);
+  console.log(`📋 Health check: http://0.0.0.0:${port}/health`);
+  console.log(`📊 System metrics: http://0.0.0.0:${port}/api/system/metrics`);
   console.log(`🔗 Socket.io enabled for real-time features`);
+  console.log(`🌐 Server bound to all interfaces (0.0.0.0) for Railway compatibility`);
   
   // Enhanced OpenAI status with mock mode indicator
   const useOpenAI = process.env.USE_OPENAI !== 'false' && process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'your_openai_api_key_here';
@@ -2361,6 +2372,7 @@ server.listen(port, () => {
   console.log(`   • OpenAI Mock Mode: ${process.env.USE_OPENAI === 'false' ? 'ENABLED (saves credits)' : 'DISABLED (using real API)'}`);
   console.log(`   • Database: ${process.env.MONGODB_URI?.includes('mongodb+srv') ? 'MongoDB Atlas' : 'Local MongoDB'}`);
   console.log(`   • Port: ${port}`);
+  console.log(`   • Host: 0.0.0.0 (all interfaces)`);
   console.log(`   • Real-time Features: ✅ Socket.io Active`);
   console.log(`   • Active Users Tracking: ✅ Enabled`);
   console.log(`   • Live Analysis Progress: ✅ Enabled`);
@@ -2376,11 +2388,13 @@ server.listen(port, () => {
   console.log('\n🌐 Access the application:');
   console.log(`   Frontend: http://localhost:5173`);
   console.log(`   Real-time Dashboard: Click the "Live" tab`);
-  console.log(`   API: http://localhost:${port}`);
+  console.log(`   API: http://0.0.0.0:${port}`);
+  console.log(`   Railway Health Check: http://0.0.0.0:${port}/health`);
   
   // Log startup event
   logger.info('Server started successfully', {
     port,
+    host: '0.0.0.0',
     environment: process.env.NODE_ENV || 'development',
     openaiMode: process.env.USE_OPENAI === 'false' ? 'mock' : 'live',
     features: [
@@ -2388,7 +2402,8 @@ server.listen(port, () => {
       'Performance Monitoring', 
       'Advanced Security',
       'Professional Logging',
-      'System Health Checks'
+      'System Health Checks',
+      'Railway Compatibility'
     ]
   });
 });

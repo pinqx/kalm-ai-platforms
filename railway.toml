@@ -5,9 +5,10 @@ watchPatterns = ["server/**"]
 
 [deploy]
 startCommand = "node start.js"
-healthcheckPath = "/health"
-healthcheckTimeout = 30
-healthcheckInterval = 10
+# Temporarily disable health check to debug startup issues
+# healthcheckPath = "/health"
+# healthcheckTimeout = 30
+# healthcheckInterval = 10
 restartPolicyType = "on_failure"
 numReplicas = 1
 
