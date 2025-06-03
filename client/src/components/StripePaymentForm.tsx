@@ -27,6 +27,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, planId, onSuccess, on
   const elements = useElements();
   const [processing, setProcessing] = useState(false);
   const [clientSecret, setClientSecret] = useState('');
+  const [error, setError] = useState<string>('');
+  const [isReady, setIsReady] = useState(false);
 
   // TEMPORARY DEBUG DISPLAY
   const debugInfo = {
@@ -77,6 +79,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, planId, onSuccess, on
 
   const createPaymentIntent = async () => {
     try {
+      setError('');
+      console.log('Creating payment intent for amount:', amount, 'planId:', planId);
+      
       const token = localStorage.getItem('token');
       const response = await fetch(`${getApiUrl()}/api/payment/create-intent`, {
         method: 'POST',
@@ -92,14 +97,20 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, planId, onSuccess, on
       });
 
       const data = await response.json();
+      console.log('Payment intent response:', { status: response.status, data });
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create payment intent');
+        throw new Error(data.error || `Server error: ${response.status}`);
       }
 
       setClientSecret(data.clientSecret);
+      setIsReady(true);
+      console.log('Payment intent created successfully');
     } catch (error: any) {
-      onError(error.message);
+      console.error('Payment intent creation failed:', error);
+      setError(`Payment setup failed: ${error.message}`);
+      setIsReady(true); // Still show the form with error
+      // Don't call onError immediately - let user see the error
     }
   };
 
@@ -187,47 +198,72 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, planId, onSuccess, on
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Card Information
-          </label>
-          <div className="border border-gray-300 rounded-lg p-4 bg-white">
-            <CardElement options={cardElementOptions} />
-          </div>
+      {/* Show error if payment setup failed */}
+      {error && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <h3 className="text-lg font-semibold text-red-800 mb-2">Payment Setup Error</h3>
+          <p className="text-red-700 text-sm mb-3">{error}</p>
+          <p className="text-red-600 text-xs">
+            This might be because the payment system isn't fully configured yet. 
+            The payment functionality is currently in demo mode.
+          </p>
         </div>
+      )}
 
-        <div className="space-y-4">
-          <button
-            type="submit"
-            disabled={!stripe || processing || !clientSecret}
-            className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
-              !stripe || processing || !clientSecret
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-blue-600 text-white hover:bg-blue-700'
-            }`}
-          >
-            {processing ? (
-              <div className="flex items-center justify-center space-x-2">
-                <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
-                <span>Processing...</span>
-              </div>
-            ) : (
-              `Pay $${amount}/month`
-            )}
-          </button>
-          
-          {onCancel && (
-            <button
-              type="button"
-              onClick={onCancel}
-              className="w-full py-3 px-4 rounded-lg font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
-            >
-              ← Back to Plans
-            </button>
-          )}
+      {/* Show loading state */}
+      {!isReady && !error && (
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Setting up payment...</p>
         </div>
-      </form>
+      )}
+
+      {/* Show form when ready or error */}
+      {(isReady || error) && (
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Card Information
+            </label>
+            <div className="border border-gray-300 rounded-lg p-4 bg-white">
+              <CardElement options={cardElementOptions} />
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <button
+              type="submit"
+              disabled={!stripe || processing || !clientSecret || !!error}
+              className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
+                !stripe || processing || !clientSecret || !!error
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-blue-600 text-white hover:bg-blue-700'
+              }`}
+            >
+              {processing ? (
+                <div className="flex items-center justify-center space-x-2">
+                  <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
+                  <span>Processing...</span>
+                </div>
+              ) : error ? (
+                'Payment Setup Failed'
+              ) : (
+                `Pay $${amount}/month`
+              )}
+            </button>
+            
+            {onCancel && (
+              <button
+                type="button"
+                onClick={onCancel}
+                className="w-full py-3 px-4 rounded-lg font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+              >
+                ← Back to Plans
+              </button>
+            )}
+          </div>
+        </form>
+      )}
     </div>
   );
 };

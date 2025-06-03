@@ -177,7 +177,8 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({ onSuccess, currentU
             onSuccess={handlePaymentSuccess}
             onError={(error) => {
               console.error('Payment error:', error);
-              handleBackToPlans();
+              // Don't automatically go back - let user see the error
+              // handleBackToPlans();
             }}
             onCancel={handleBackToPlans}
           />
