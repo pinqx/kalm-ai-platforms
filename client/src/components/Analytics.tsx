@@ -9,8 +9,10 @@ import {
   FaceSmileIcon,
   FaceFrownIcon,
   ArrowUpIcon,
-  ArrowDownIcon
+  ArrowDownIcon,
+  UsersIcon
 } from '@heroicons/react/24/outline';
+import { getApiUrl } from '../config';
 
 interface AnalyticsData {
   totalTranscripts: number;
@@ -43,7 +45,7 @@ export default function Analytics({ user, token }: AnalyticsProps) {
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:3007/api/analytics', {
+      const response = await fetch(`${getApiUrl()}/api/analytics`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },

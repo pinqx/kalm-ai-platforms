@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { XMarkIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { getApiUrl } from '../config';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -35,7 +36,7 @@ export default function AuthModal({ isOpen, onClose, onAuth }: AuthModalProps) {
 
     try {
       const endpoint = isLogin ? 'login' : 'register';
-      const response = await fetch(`http://localhost:3007/api/auth/${endpoint}`, {
+      const response = await fetch(getApiUrl(`/api/auth/${endpoint}`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

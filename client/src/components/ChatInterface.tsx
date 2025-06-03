@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { ChatBubbleLeftRightIcon, PaperAirplaneIcon, UserIcon, SparklesIcon } from '@heroicons/react/24/outline';
+import { getApiUrl } from '../config';
 
 interface Message {
   id: string;
@@ -72,16 +73,18 @@ How can I help you with your sales strategy? You can ask me about:
     setIsTyping(true);
 
     try {
-      const response = await fetch('http://localhost:3007/api/chat', {
+      const token = localStorage.getItem('token');
+      const response = await fetch(getApiUrl('/api/chat'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           message: inputValue,
           analysis,
-          conversationHistory: messages
-        }),
+          conversationHistory: messages.slice(-5) // Send last 5 messages for context
+        })
       });
 
       const data = await response.json();

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { 
   UserGroupIcon, 
@@ -9,6 +9,7 @@ import {
   CheckCircleIcon,
   InformationCircleIcon
 } from '@heroicons/react/24/outline';
+import { getWsUrl } from '../config';
 
 interface ActiveUser {
   email: string;
@@ -54,7 +55,11 @@ interface ChatMessage {
   userId: string;
 }
 
-const RealtimeDashboard: React.FC = () => {
+interface RealtimeDashboardProps {
+  user: any;
+}
+
+const RealtimeDashboard: React.FC<RealtimeDashboardProps> = ({ user }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [activeUsers, setActiveUsers] = useState<ActiveUser[]>([]);
@@ -65,11 +70,16 @@ const RealtimeDashboard: React.FC = () => {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState('');
   const [showChat, setShowChat] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Initialize Socket.io connection
-    const newSocket = io('http://localhost:3007', {
-      withCredentials: true
+    const newSocket = io(getWsUrl(), {
+      transports: ['websocket', 'polling'],
+      timeout: 20000,
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000
     });
 
     newSocket.on('connect', () => {

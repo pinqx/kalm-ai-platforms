@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { CloudArrowUpIcon, DocumentCheckIcon, ExclamationTriangleIcon, SparklesIcon, CheckCircleIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { getApiUrl } from '../config';
 
 interface TranscriptAnalysis {
   summary: string;
@@ -73,7 +74,7 @@ export default function TranscriptUpload({ onAnalysis, user, token }: Transcript
         setUploadProgress(prev => Math.min(prev + 10, 90));
       }, 200);
 
-      const response = await fetch('http://localhost:3007/api/analyze-transcript', {
+      const response = await fetch(getApiUrl('/api/analyze-transcript'), {
         method: 'POST',
         headers,
         body: formData

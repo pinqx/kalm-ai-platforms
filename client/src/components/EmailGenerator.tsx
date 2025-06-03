@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { EnvelopeIcon, SparklesIcon, ClipboardDocumentIcon } from '@heroicons/react/24/outline';
+import { getApiUrl } from '../config';
 
 interface TranscriptAnalysis {
   summary: string;
@@ -23,17 +24,19 @@ export default function EmailGenerator({ analysis }: EmailGeneratorProps) {
     
     setGenerating(true);
     try {
-      const response = await fetch('http://localhost:3007/api/generate-email', {
+      const token = localStorage.getItem('token');
+      const response = await fetch(getApiUrl('/api/generate-email'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           analysis,
           emailType,
           tone,
           customPrompt
-        }),
+        })
       });
       
       const data = await response.json();
