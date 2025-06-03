@@ -84,6 +84,7 @@ const {
   fileUploadSecurity 
 } = require('./middleware/security');
 const { logger, logError, logAuth, logAI, logDB, logSocket } = require('./utils/logger');
+const { checkTranscriptLimits, checkFeatureAccess, getUserUsageStats, PLAN_LIMITS } = require('./middleware/usageLimits');
 
 // Import models
 const User = require('./models/User');
@@ -833,7 +834,7 @@ app.get('/api/auth/profile', authenticateToken, async (req, res) => {
 });
 
 // Enhanced transcript analysis with audio transcription support
-app.post('/api/analyze-transcript', authenticateToken, upload.single('transcript'), asyncHandler(async (req, res) => {
+app.post('/api/analyze-transcript', authenticateToken, checkTranscriptLimits, upload.single('transcript'), asyncHandler(async (req, res) => {
     console.log('Transcript analysis called');
     
     if (!req.file) {
@@ -2559,5 +2560,204 @@ server.listen(port, '0.0.0.0', () => {
     ]
   });
 });
+
+// ================================
+// USAGE TRACKING ENDPOINTS
+// ================================
+
+// Get current user's usage statistics
+app.get('/api/usage/stats', 
+  authenticateToken,
+  asyncHandler(async (req, res) => {
+    try {
+      const userId = req.user.id || req.user._id;
+      const planId = req.user.subscription?.planId || 'free';
+      const planLimits = PLAN_LIMITS[planId];
+      
+      const usageStats = await getUserUsageStats(userId);
+      
+      if (!usageStats) {
+        return res.status(500).json({ error: 'Failed to get usage statistics' });
+      }
+      
+      const response = {
+        currentPlan: planId,
+        limits: planLimits,
+        usage: {
+          monthly: {
+            used: usageStats.monthly,
+            limit: planLimits.monthlyTranscripts,
+            remaining: planLimits.monthlyTranscripts === 0 ? 'unlimited' : Math.max(0, planLimits.monthlyTranscripts - usageStats.monthly),
+            percentage: planLimits.monthlyTranscripts === 0 ? 0 : Math.round((usageStats.monthly / planLimits.monthlyTranscripts) * 100)
+          },
+          daily: {
+            used: usageStats.daily,
+            limit: planLimits.dailyTranscripts,
+            remaining: planLimits.dailyTranscripts === 0 ? 'unlimited' : Math.max(0, planLimits.dailyTranscripts - usageStats.daily),
+            percentage: planLimits.dailyTranscripts === 0 ? 0 : Math.round((usageStats.daily / planLimits.dailyTranscripts) * 100)
+          },
+          total: usageStats.total
+        },
+        features: planLimits.features,
+        upgradeSuggestions: generateUpgradeSuggestions(planId, usageStats)
+      };
+      
+      res.json(response);
+      
+    } catch (error) {
+      console.error('Usage stats error:', error);
+      res.status(500).json({ error: 'Failed to get usage statistics' });
+    }
+  })
+);
+
+// Admin endpoint - Get all users and their usage
+app.get('/api/admin/users', 
+  authenticateToken,
+  // checkFeatureAccess('adminDashboard'), // Uncomment when admin roles are implemented
+  asyncHandler(async (req, res) => {
+    try {
+      // For now, anyone can access this for demo purposes
+      // In production, you'd check for admin role
+      
+      const page = parseInt(req.query.page) || 1;
+      const limit = parseInt(req.query.limit) || 20;
+      const skip = (page - 1) * limit;
+      
+      if (mongoose.connection.readyState !== 1) {
+        // Return mock admin data for development
+        return res.json({
+          users: [
+            {
+              _id: 'mock-user-1',
+              email: 'demo@example.com',
+              firstName: 'Demo',
+              lastName: 'User',
+              subscription: { planId: 'free', status: 'inactive' },
+              createdAt: new Date(Date.now() - 86400000 * 7),
+              lastLogin: new Date(Date.now() - 86400000),
+              usage: { monthly: 3, daily: 1, total: 15 }
+            },
+            {
+              _id: 'mock-user-2', 
+              email: 'test@company.com',
+              firstName: 'Test',
+              lastName: 'Professional',
+              subscription: { planId: 'professional', status: 'active' },
+              createdAt: new Date(Date.now() - 86400000 * 30),
+              lastLogin: new Date(Date.now() - 3600000),
+              usage: { monthly: 45, daily: 5, total: 125 }
+            }
+          ],
+          totalUsers: 2,
+          pagination: { current: 1, pages: 1, total: 2 },
+          summary: {
+            totalUsers: 2,
+            activeSubscriptions: 1,
+            freeUsers: 1,
+            monthlyRevenue: 79
+          }
+        });
+      }
+      
+      // Get users with their usage stats
+      const users = await User.find({})
+        .select('-password')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean();
+        
+      const totalUsers = await User.countDocuments({});
+      
+      // Add usage stats for each user
+      const usersWithUsage = await Promise.all(
+        users.map(async (user) => {
+          const usage = await getUserUsageStats(user._id);
+          return {
+            ...user,
+            usage: usage || { monthly: 0, daily: 0, total: 0 }
+          };
+        })
+      );
+      
+      // Calculate summary statistics
+      const summary = {
+        totalUsers,
+        activeSubscriptions: users.filter(u => u.subscription?.status === 'active').length,
+        freeUsers: users.filter(u => !u.subscription?.planId || u.subscription.planId === 'free').length,
+        monthlyRevenue: users.reduce((sum, u) => {
+          if (u.subscription?.status === 'active') {
+            switch (u.subscription.planId) {
+              case 'starter': return sum + 29;
+              case 'professional': return sum + 79;
+              case 'enterprise': return sum + 149;
+              default: return sum;
+            }
+          }
+          return sum;
+        }, 0)
+      };
+      
+      res.json({
+        users: usersWithUsage,
+        totalUsers,
+        pagination: {
+          current: page,
+          pages: Math.ceil(totalUsers / limit),
+          total: totalUsers
+        },
+        summary
+      });
+      
+    } catch (error) {
+      console.error('Admin users error:', error);
+      res.status(500).json({ error: 'Failed to get users data' });
+    }
+  })
+);
+
+// Helper function to generate upgrade suggestions
+function generateUpgradeSuggestions(currentPlan, usageStats) {
+  const suggestions = [];
+  
+  if (currentPlan === 'free') {
+    if (usageStats.monthly >= 3) {
+      suggestions.push({
+        type: 'usage_warning',
+        message: `You've used ${usageStats.monthly}/5 free analyses this month`,
+        action: 'Upgrade to Starter for 50 analyses/month',
+        urgency: usageStats.monthly >= 4 ? 'high' : 'medium'
+      });
+    }
+    
+    suggestions.push({
+      type: 'feature_unlock',
+      message: 'Unlock custom templates and priority support',
+      action: 'Upgrade to Starter for $29/month',
+      urgency: 'low'
+    });
+  }
+  
+  if (currentPlan === 'starter') {
+    if (usageStats.monthly >= 40) {
+      suggestions.push({
+        type: 'usage_warning',
+        message: `You're approaching your monthly limit (${usageStats.monthly}/50)`,
+        action: 'Upgrade to Professional for unlimited analyses',
+        urgency: usageStats.monthly >= 45 ? 'high' : 'medium'
+      });
+    }
+    
+    suggestions.push({
+      type: 'feature_unlock',
+      message: 'Unlock team collaboration and advanced analytics',
+      action: 'Upgrade to Professional for $79/month',
+      urgency: 'low'
+    });
+  }
+  
+  return suggestions;
+}
 
 module.exports = { app, server, io };
