@@ -7,9 +7,141 @@ import {
   CalendarIcon,
   EnvelopeIcon,
   CogIcon,
-  EyeIcon
+  EyeIcon,
+  LockClosedIcon,
+  ShieldCheckIcon
 } from '@heroicons/react/24/outline';
 import { getApiUrl } from '../config';
+
+// Admin Authentication Component
+const AdminLogin: React.FC<{ onAuthenticate: (email: string) => void }> = ({ onAuthenticate }) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const AUTHORIZED_ADMIN_EMAILS = [
+    'alexfisher@mac.home',
+    'alexfisher.dev@gmail.com', 
+    'alex@kalm.live',
+    'admin@kalm.live'
+  ];
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    // Check if email is authorized
+    if (!AUTHORIZED_ADMIN_EMAILS.includes(email.toLowerCase())) {
+      setError('Unauthorized email address. Admin access is restricted.');
+      setLoading(false);
+      return;
+    }
+
+    // For demo purposes, use a simple password check
+    // In production, this would connect to your auth system
+    if (password === 'kalm2024admin' || password === 'admin123') {
+      // Store admin session
+      localStorage.setItem('kalm_admin_session', JSON.stringify({
+        email: email,
+        timestamp: Date.now(),
+        role: 'admin'
+      }));
+      onAuthenticate(email);
+    } else {
+      setError('Invalid password. Please try again.');
+    }
+    
+    setLoading(false);
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full space-y-8">
+        <div>
+          <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-red-100">
+            <ShieldCheckIcon className="h-6 w-6 text-red-600" />
+          </div>
+          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+            Admin Access Required
+          </h2>
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Please authenticate with your authorized admin credentials
+          </p>
+        </div>
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          <div className="rounded-md shadow-sm -space-y-px">
+            <div>
+              <label htmlFor="admin-email" className="sr-only">
+                Email address
+              </label>
+              <input
+                id="admin-email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-red-500 focus:border-red-500 focus:z-10 sm:text-sm"
+                placeholder="Admin email address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="admin-password" className="sr-only">
+                Password
+              </label>
+              <input
+                id="admin-password"
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-red-500 focus:border-red-500 focus:z-10 sm:text-sm"
+                placeholder="Admin password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+          </div>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-md p-4">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <LockClosedIcon className="h-5 w-5 text-red-400" />
+                </div>
+                <div className="ml-3">
+                  <p className="text-sm text-red-800">{error}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50"
+            >
+              <span className="absolute left-0 inset-y-0 flex items-center pl-3">
+                <LockClosedIcon className="h-5 w-5 text-red-500 group-hover:text-red-400" aria-hidden="true" />
+              </span>
+              {loading ? 'Authenticating...' : 'Access Admin Dashboard'}
+            </button>
+          </div>
+
+          <div className="text-center">
+            <p className="text-xs text-gray-500">
+              Restricted access - Authorized personnel only
+            </p>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
 
 interface User {
   _id: string;
@@ -180,10 +312,51 @@ const AdminDashboard: React.FC = () => {
   const [error, setError] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [usingMockData, setUsingMockData] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [adminEmail, setAdminEmail] = useState('');
 
   useEffect(() => {
-    fetchAdminData(currentPage);
-  }, [currentPage]);
+    // Check for existing admin session
+    const adminSession = localStorage.getItem('kalm_admin_session');
+    if (adminSession) {
+      try {
+        const session = JSON.parse(adminSession);
+        const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
+        
+        if (Date.now() - session.timestamp < oneHour) {
+          setIsAuthenticated(true);
+          setAdminEmail(session.email);
+        } else {
+          // Session expired
+          localStorage.removeItem('kalm_admin_session');
+        }
+      } catch (error) {
+        localStorage.removeItem('kalm_admin_session');
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchAdminData(currentPage);
+    }
+  }, [currentPage, isAuthenticated]);
+
+  const handleAuthenticate = (email: string) => {
+    setIsAuthenticated(true);
+    setAdminEmail(email);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('kalm_admin_session');
+    setIsAuthenticated(false);
+    setAdminEmail('');
+  };
+
+  // If not authenticated, show admin login
+  if (!isAuthenticated) {
+    return <AdminLogin onAuthenticate={handleAuthenticate} />;
+  }
 
   const fetchAdminData = async (page: number) => {
     try {
@@ -301,9 +474,24 @@ const AdminDashboard: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
           <p className="text-gray-600">Monitor user activity and platform metrics</p>
         </div>
-        <div className="flex items-center space-x-2">
-          <CogIcon className="h-5 w-5 text-gray-400" />
-          <span className="text-sm text-gray-500">Last updated: {new Date().toLocaleTimeString()}</span>
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 text-sm text-gray-500">
+              <ShieldCheckIcon className="h-4 w-4 text-green-500" />
+              <span>Admin: {adminEmail}</span>
+            </div>
+            <div className="flex items-center space-x-2 text-sm text-gray-500">
+              <CogIcon className="h-4 w-4 text-gray-400" />
+              <span>Last updated: {new Date().toLocaleTimeString()}</span>
+            </div>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="flex items-center space-x-1 px-3 py-1 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors"
+          >
+            <LockClosedIcon className="h-4 w-4" />
+            <span>Logout</span>
+          </button>
         </div>
       </div>
 

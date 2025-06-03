@@ -46,45 +46,51 @@ interface UsageDashboardProps {
 
 // Realistic fallback usage data for when backend isn't available
 const FALLBACK_USAGE_DATA: UsageStats = {
-  currentPlan: 'professional',
+  currentPlan: 'free_trial',
   limits: {
-    monthlyTranscripts: 500,
-    dailyTranscripts: 25,
+    monthlyTranscripts: 5,
+    dailyTranscripts: 5,
     features: {
-      advancedAnalytics: true,
-      teamCollaboration: true,
-      prioritySupport: true,
+      advancedAnalytics: false,
+      teamCollaboration: false,
+      prioritySupport: false,
       crmIntegrations: false,
-      customTemplates: true
+      customTemplates: false
     }
   },
   usage: {
     monthly: {
-      used: 127,
-      limit: 500,
-      remaining: 373,
-      percentage: 25
+      used: 2,
+      limit: 5,
+      remaining: 3,
+      percentage: 40
     },
     daily: {
-      used: 4,
-      limit: 25,
-      remaining: 21,
-      percentage: 16
+      used: 1,
+      limit: 5,
+      remaining: 4,
+      percentage: 20
     },
-    total: 847
+    total: 2
   },
   features: {
-    advancedAnalytics: true,
-    teamCollaboration: true,
-    prioritySupport: true,
+    advancedAnalytics: false,
+    teamCollaboration: false,
+    prioritySupport: false,
     crmIntegrations: false,
-    customTemplates: true
+    customTemplates: false
   },
   upgradeSuggestions: [
     {
+      type: 'limit_approaching',
+      message: 'You have 3 free analyses remaining. Upgrade to continue analyzing transcripts.',
+      action: 'Choose a Plan',
+      urgency: 'medium'
+    },
+    {
       type: 'feature',
-      message: 'Unlock CRM integrations with Enterprise plan',
-      action: 'Upgrade to Enterprise',
+      message: 'Unlock advanced analytics and team collaboration features',
+      action: 'Upgrade to Professional',
       urgency: 'low'
     }
   ]
@@ -138,6 +144,7 @@ const UsageDashboard: React.FC<UsageDashboardProps> = ({ onUpgrade }) => {
   const getPlanColor = (plan: string) => {
     switch (plan) {
       case 'free': return 'text-gray-600 bg-gray-100';
+      case 'free_trial': return 'text-orange-600 bg-orange-100';
       case 'starter': return 'text-green-600 bg-green-100';
       case 'professional': return 'text-blue-600 bg-blue-100';
       case 'enterprise': return 'text-purple-600 bg-purple-100';
@@ -206,9 +213,10 @@ const UsageDashboard: React.FC<UsageDashboardProps> = ({ onUpgrade }) => {
               <h3 className="text-lg font-semibold text-gray-900">Usage Overview</h3>
               <div className="flex items-center space-x-2 mt-1">
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPlanColor(usageStats.currentPlan)}`}>
-                  {usageStats.currentPlan.charAt(0).toUpperCase() + usageStats.currentPlan.slice(1)} Plan
+                  {usageStats.currentPlan === 'free_trial' ? 'Free Trial' : 
+                   usageStats.currentPlan.charAt(0).toUpperCase() + usageStats.currentPlan.slice(1)} Plan
                 </span>
-                {usageStats.currentPlan === 'free' && (
+                {(usageStats.currentPlan === 'free' || usageStats.currentPlan === 'free_trial') && (
                   <span className="text-xs text-gray-500">• Limited features</span>
                 )}
               </div>

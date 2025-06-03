@@ -85,9 +85,23 @@ function App() {
     }
   }, []);
 
+  // Site-wide authentication protection
+  useEffect(() => {
+    // If user is not authenticated and trying to access protected content
+    if (!user && activeTab !== 'home' && activeTab !== 'pricing') {
+      setActiveTab('home');
+      setShowAuthModal(true);
+    }
+  }, [activeTab, user]);
+
   const handleAuth = (userData: any, authToken: string) => {
     setUser(userData);
     setToken(authToken);
+    
+    // After successful authentication, redirect to upload tab
+    if (activeTab === 'home') {
+      setActiveTab('upload');
+    }
   };
 
   const handleLogout = () => {
@@ -104,10 +118,11 @@ function App() {
   };
 
   const handleGetStarted = () => {
-    setActiveTab('upload');
     if (!user) {
       setShowAuthModal(true);
+      return;
     }
+    setActiveTab('upload');
   };
 
   const handleViewDemo = () => {
