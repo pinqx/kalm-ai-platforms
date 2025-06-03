@@ -100,23 +100,45 @@ const LeadGeneration: React.FC = () => {
       {
         id: '1',
         name: 'Initial LinkedIn Message',
-        subject: 'AI Sales Intelligence for {{company}}',
-        content: `Hi {{firstName}},
+        subject: 'AI Sales Intelligence for [COMPANY NAME]',
+        content: `Hi [FIRST NAME],
 
-I noticed you're leading sales at {{company}} and thought you might be interested in how AI is helping sales teams improve their call analysis and coaching.
+I noticed you're leading sales at [COMPANY NAME] and thought you might be interested in how AI is helping sales teams improve their call analysis and coaching.
 
 At KALM, we help teams like yours:
 • Get instant insights from every sales conversation
 • Identify missed objections and opportunities
 • Scale coaching across the entire team
 
-Would you be open to a quick 15-minute conversation about how this could help {{company}}'s sales performance?
+Would you be open to a quick 15-minute conversation about how this could help [COMPANY NAME]'s sales performance?
 
 Best regards,
 Alex Fisher
 Founder, KALM AI`,
         type: 'initial',
         openRate: 0, // Manual tracking
+        responseRate: 0
+      },
+      {
+        id: '2',
+        name: 'Follow-up Message',
+        subject: 'Quick follow-up - AI sales coaching for [COMPANY NAME]',
+        content: `Hi [FIRST NAME],
+
+I wanted to follow up on my previous message about AI-powered sales coaching.
+
+I noticed [COMPANY NAME] has been growing rapidly, and many fast-growing companies struggle with:
+• Inconsistent sales messaging across the team
+• Difficulty scaling coaching to all reps
+• Missing key insights from customer conversations
+
+KALM AI solves these exact problems. Would you be interested in seeing a quick 15-minute demo of how it works?
+
+Best,
+Alex Fisher
+KALM AI`,
+        type: 'followup1',
+        openRate: 0,
         responseRate: 0
       }
     ]);
@@ -369,7 +391,7 @@ Founder, KALM AI`,
                 <h4 className="font-medium text-green-900 mb-2">📝 How to Use Templates</h4>
                 <ul className="text-sm text-green-800 space-y-1">
                   <li>• Copy template content manually</li>
-                  <li>• Replace {{firstName}} and {{company}} with actual names</li>
+                  <li>• Replace [FIRST NAME] and [COMPANY NAME] with actual names</li>
                   <li>• Personalize each message before sending</li>
                   <li>• Send via LinkedIn or personal email client</li>
                   <li>• Track responses manually in the system</li>
