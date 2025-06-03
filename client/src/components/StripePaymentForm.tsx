@@ -21,56 +21,12 @@ interface PaymentFormProps {
 }
 
 const PaymentForm: React.FC<PaymentFormProps> = ({ amount, planId, onSuccess, onError, onCancel }) => {
-  console.log('StripePaymentForm received:', { amount, planId, amountType: typeof amount });
-  
   const stripe = useStripe();
   const elements = useElements();
   const [processing, setProcessing] = useState(false);
   const [clientSecret, setClientSecret] = useState('');
   const [error, setError] = useState<string>('');
   const [isReady, setIsReady] = useState(false);
-
-  // TEMPORARY DEBUG DISPLAY
-  const debugInfo = {
-    amount: amount,
-    amountType: typeof amount,
-    planId: planId,
-    isNaN: isNaN(amount as any),
-    isUndefined: amount === undefined,
-    isNull: amount === null,
-    isNumber: typeof amount === 'number',
-    amountGreaterThanZero: amount > 0
-  };
-
-  console.log('StripePaymentForm debug info:', debugInfo);
-
-  // Safety check - if amount is undefined, don't proceed
-  if (!amount || isNaN(amount) || amount <= 0) {
-    console.log('StripePaymentForm: Amount validation failed, showing error');
-    return (
-      <div className="max-w-md mx-auto bg-white rounded-2xl shadow-xl p-8">
-        <div className="text-center">
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <h3 className="text-lg font-semibold text-red-800 mb-2">Payment Error</h3>
-            <p className="text-red-700 mb-2">Invalid payment amount. Please go back and select a plan.</p>
-            <div className="text-xs text-red-600 font-mono bg-red-100 p-2 rounded mt-2">
-              DEBUG: {JSON.stringify(debugInfo, null, 2)}
-            </div>
-          </div>
-          {onCancel && (
-            <button
-              onClick={onCancel}
-              className="w-full py-3 px-4 rounded-lg font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
-            >
-              ← Back to Plans
-            </button>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  console.log('StripePaymentForm: Amount validation passed, rendering payment form');
 
   useEffect(() => {
     // Create payment intent when component mounts
@@ -80,9 +36,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, planId, onSuccess, on
   const createPaymentIntent = async () => {
     try {
       setError('');
-      console.log('Creating payment intent for amount:', amount, 'planId:', planId);
       
       const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Please sign in to continue with payment');
+      }
+      
       const response = await fetch(`${getApiUrl()}/api/payment/create-intent`, {
         method: 'POST',
         headers: {
@@ -97,20 +56,34 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, planId, onSuccess, on
       });
 
       const data = await response.json();
-      console.log('Payment intent response:', { status: response.status, data });
 
       if (!response.ok) {
-        throw new Error(data.error || `Server error: ${response.status}`);
+        if (response.status === 401) {
+          throw new Error('Authentication failed. Please sign in again.');
+        } else if (response.status === 429) {
+          throw new Error('Too many requests. Please wait a moment and try again.');
+        } else {
+          throw new Error(data.error || `Payment setup failed (${response.status})`);
+        }
       }
 
       setClientSecret(data.clientSecret);
       setIsReady(true);
-      console.log('Payment intent created successfully');
     } catch (error: any) {
       console.error('Payment intent creation failed:', error);
-      setError(`Payment setup failed: ${error.message}`);
-      setIsReady(true); // Still show the form with error
-      // Don't call onError immediately - let user see the error
+      
+      // Provide user-friendly error messages
+      let userMessage = error.message;
+      if (error.message.includes('authentication')) {
+        userMessage = 'Please sign in to continue with payment. The payment system requires authentication.';
+      } else if (error.message.includes('Too many')) {
+        userMessage = 'Too many payment attempts. Please wait a few minutes and try again.';
+      } else if (error.message.includes('fetch')) {
+        userMessage = 'Unable to connect to payment system. Please check your internet connection.';
+      }
+      
+      setError(userMessage);
+      setIsReady(true);
     }
   };
 
@@ -203,10 +176,23 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, planId, onSuccess, on
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
           <h3 className="text-lg font-semibold text-red-800 mb-2">Payment Setup Error</h3>
           <p className="text-red-700 text-sm mb-3">{error}</p>
-          <p className="text-red-600 text-xs">
-            This might be because the payment system isn't fully configured yet. 
-            The payment functionality is currently in demo mode.
-          </p>
+          {error.includes('authentication') || error.includes('sign in') ? (
+            <div className="text-red-600 text-xs">
+              <p>• Please make sure you're signed in to your account</p>
+              <p>• Try refreshing the page and signing in again</p>
+              <p>• Contact support if the issue persists</p>
+            </div>
+          ) : error.includes('Too many') ? (
+            <div className="text-red-600 text-xs">
+              <p>• Please wait 5-10 minutes before trying again</p>
+              <p>• The payment system has rate limiting for security</p>
+            </div>
+          ) : (
+            <div className="text-red-600 text-xs">
+              <p>The payment system is currently in development mode.</p>
+              <p>Please contact support to set up your subscription manually.</p>
+            </div>
+          )}
         </div>
       )}
 

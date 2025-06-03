@@ -151,8 +151,6 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({ onSuccess, currentU
   }
 
   if (selectedPlanForPayment) {
-    console.log('PaymentComponent: Rendering payment form for plan:', selectedPlanForPayment);
-    
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-16 px-4">
         <div className="max-w-md mx-auto">
@@ -161,14 +159,6 @@ const PaymentComponent: React.FC<PaymentComponentProps> = ({ onSuccess, currentU
             <div className="text-lg text-gray-600">
               {selectedPlanForPayment.name} Plan - ${selectedPlanForPayment.price}/month
             </div>
-          </div>
-          
-          {/* Temporary debug info */}
-          <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded text-sm">
-            <div>✅ Plan selected: {selectedPlanForPayment.name}</div>
-            <div>✅ Amount: ${selectedPlanForPayment.price}</div>
-            <div>✅ Plan ID: {selectedPlanForPayment.id}</div>
-            <div>About to render StripePaymentForm...</div>
           </div>
           
           <StripePaymentForm

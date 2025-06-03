@@ -43,6 +43,12 @@ const aiLimiter = createRateLimiter(
   'Too many AI requests, please try again later'
 );
 
+const paymentLimiter = createRateLimiter(
+  15 * 60 * 1000, // 15 minutes
+  process.env.NODE_ENV === 'production' ? 50 : 200, // Higher limit for payments
+  'Too many payment requests, please try again later'
+);
+
 // Security headers middleware
 const securityHeaders = (req, res, next) => {
   // Remove server header
@@ -146,6 +152,7 @@ module.exports = {
   authLimiter,
   uploadLimiter,
   aiLimiter,
+  paymentLimiter,
   securityHeaders,
   sanitizeInput,
   ipWhitelist,

@@ -78,6 +78,7 @@ const {
   authLimiter, 
   uploadLimiter, 
   aiLimiter,
+  paymentLimiter,
   securityHeaders, 
   sanitizeInput, 
   fileUploadSecurity 
@@ -2188,7 +2189,7 @@ function generateAdvancedMockAnalytics(timeRange) {
 
 // Create payment intent
 app.post('/api/payment/create-intent', 
-  authLimiter,
+  paymentLimiter,
   authenticateToken,
   [
     body('amount').isNumeric().withMessage('Amount must be a number'),
@@ -2274,7 +2275,7 @@ app.post('/api/payment/create-intent',
 
 // Confirm payment and create subscription
 app.post('/api/payment/confirm',
-  authLimiter,
+  paymentLimiter,
   authenticateToken,
   [
     body('paymentIntentId').notEmpty().withMessage('Payment intent ID is required'),
