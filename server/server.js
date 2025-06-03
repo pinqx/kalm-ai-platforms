@@ -343,12 +343,17 @@ const corsOptions = {
     'http://localhost:5173',  // Primary frontend port
     'http://localhost:5174', 
     'http://localhost:5175',
-    process.env.FRONTEND_URL || 'http://localhost:5173'
-  ],
+    'http://localhost:3000',  // Next.js default
+    'http://localhost:3001',  // Alternative port
+    process.env.FRONTEND_URL,
+    'https://*.vercel.app',   // Allow all Vercel apps
+    /^https:\/\/.*\.vercel\.app$/,  // Regex for Vercel domains
+  ].filter(Boolean), // Remove undefined values
   credentials: true,
   optionsSuccessStatus: 200,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  exposedHeaders: ['Authorization']
 };
 app.use(cors(corsOptions));
 
