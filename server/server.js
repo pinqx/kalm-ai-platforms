@@ -511,11 +511,11 @@ const authenticateToken = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'dev-secret-key');
     
-    // In development mode without MongoDB, use mock user data
+    // In development mode without MongoDB, use mock user data but preserve real email
     if (mongoose.connection.readyState !== 1) {
       req.user = {
         id: decoded.id,
-        email: decoded.email,
+        email: decoded.email, // Keep real email from token
         firstName: 'Demo',
         lastName: 'User',
         isActive: true
@@ -2556,6 +2556,75 @@ app.post('/api/debug/create-admin', asyncHandler(async (req, res) => {
   } catch (error) {
     console.error('Admin user creation error:', error);
     res.status(500).json({ error: 'Failed to create admin user', details: error.message });
+  }
+}));
+
+// Admin login/setup endpoint - creates admin user if needed and returns valid token  
+app.post('/api/debug/admin-login', asyncHandler(async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(500).json({ error: 'Database not connected' });
+    }
+
+    const adminEmail = 'alex@kalm.live';
+    
+    // Find or create admin user
+    let adminUser = await User.findOne({ email: adminEmail });
+    
+    if (!adminUser) {
+      console.log('🔧 Creating admin user...');
+      adminUser = new User({
+        email: adminEmail,
+        password: 'AdminPassword123!', // Change this password after login
+        firstName: 'Alex',
+        lastName: 'Fisher', 
+        company: 'KALM AI',
+        role: 'admin',
+        subscription: {
+          planId: 'enterprise',
+          status: 'active'
+        }
+      });
+      await adminUser.save();
+      console.log('✅ Admin user created successfully');
+    } else {
+      console.log('ℹ️ Admin user exists, updating status...');
+      // Ensure admin has enterprise access
+      adminUser.subscription = {
+        planId: 'enterprise',
+        status: 'active'
+      };
+      adminUser.role = 'admin';
+      await adminUser.save();
+    }
+
+    // Generate a fresh token
+    const token = jwt.sign(
+      { id: adminUser._id, email: adminUser.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '30d' } // Longer expiry for admin
+    );
+
+    res.json({
+      success: true,
+      message: 'Admin access ready',
+      user: {
+        id: adminUser._id,
+        email: adminUser.email,
+        firstName: adminUser.firstName,
+        lastName: adminUser.lastName,
+        fullName: `${adminUser.firstName} ${adminUser.lastName}`,
+        role: adminUser.role,
+        company: adminUser.company,
+        subscription: adminUser.subscription
+      },
+      token,
+      instructions: 'Save this token and use it to login to the admin panel'
+    });
+
+  } catch (error) {
+    console.error('Admin login error:', error);
+    res.status(500).json({ error: 'Failed to setup admin access', details: error.message });
   }
 }));
 
