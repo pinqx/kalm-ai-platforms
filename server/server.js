@@ -347,6 +347,8 @@ const corsOptions = {
     'http://localhost:3001',  // Alternative port
     'https://kalm-ai-platforms.vercel.app',  // Current Vercel deployment
     'https://kalm-ai-platforms-git-main-alexs-projects-669e350e.vercel.app',  // Vercel preview
+    'https://kalm.live',      // Custom domain - LIVE!
+    'https://www.kalm.live',  // WWW subdomain
     process.env.FRONTEND_URL,
     'https://*.vercel.app',   // Allow all Vercel apps
     /^https:\/\/.*\.vercel\.app$/,  // Regex for Vercel domains
