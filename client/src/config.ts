@@ -2,7 +2,7 @@
 const isDevelopment = import.meta.env.MODE === 'development';
 
 export const API_CONFIG = {
-  BASE_URL: 'https://web-production-e7159.up.railway.app', // Always use Railway for now
+  BASE_URL: 'https://web-production-e7159.up.railway.app', // Use Railway backend
   
   WS_URL: 'wss://web-production-e7159.up.railway.app'
 };
