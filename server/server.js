@@ -345,9 +345,14 @@ const corsOptions = {
     'http://localhost:5175',
     'http://localhost:3000',  // Next.js default
     'http://localhost:3001',  // Alternative port
+    'https://kalm-ai-platforms.vercel.app',  // Current Vercel deployment
+    'https://kalm-ai-platforms-git-main-alexs-projects-669e350e.vercel.app',  // Vercel preview
     process.env.FRONTEND_URL,
     'https://*.vercel.app',   // Allow all Vercel apps
     /^https:\/\/.*\.vercel\.app$/,  // Regex for Vercel domains
+    // Add your custom domain here when configured
+    // 'https://yourdomain.com',
+    // 'https://app.yourdomain.com',
   ].filter(Boolean), // Remove undefined values
   credentials: true,
   optionsSuccessStatus: 200,
