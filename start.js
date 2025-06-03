@@ -30,7 +30,7 @@ console.log('✅ Server files found, starting application...');
 process.chdir(serverDir);
 console.log(`📁 Changed to directory: ${process.cwd()}`);
 
-// Add a small delay to ensure all file systems are ready
+// Quick startup delay for file system readiness
 console.log('⏳ Initializing server environment...');
 setTimeout(() => {
   console.log('🚀 Launching server process...');
@@ -77,4 +77,4 @@ setTimeout(() => {
 
   console.log(`🎯 Server process started with PID: ${server.pid}`);
   
-}, 2000); // 2 second delay 
+}, 1000); // Reduced to 1 second 

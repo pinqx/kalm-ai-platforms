@@ -15,6 +15,61 @@ const fs = require('fs').promises;
 const path = require('path');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
+// Environment validation and setup
+console.log('🔍 Validating environment configuration...');
+
+// Required environment variables for production
+const requiredEnvVars = {
+  'NODE_ENV': process.env.NODE_ENV || 'development',
+  'PORT': process.env.PORT || 3000,
+  'JWT_SECRET': process.env.JWT_SECRET || 'dev-secret-key'
+};
+
+// Optional but recommended environment variables
+const optionalEnvVars = {
+  'MONGODB_URI': process.env.MONGODB_URI || null,
+  'OPENAI_API_KEY': process.env.OPENAI_API_KEY || null,
+  'USE_OPENAI': process.env.USE_OPENAI || 'false',
+  'UPLOAD_DIR': process.env.UPLOAD_DIR || 'uploads/',
+  'MAX_FILE_SIZE': process.env.MAX_FILE_SIZE || '25000000'
+};
+
+console.log('📋 Environment Status:');
+Object.entries(requiredEnvVars).forEach(([key, value]) => {
+  console.log(`   ✅ ${key}: ${key === 'JWT_SECRET' ? '***configured***' : value}`);
+});
+
+Object.entries(optionalEnvVars).forEach(([key, value]) => {
+  if (value) {
+    const displayValue = key.includes('SECRET') || key.includes('KEY') || key.includes('URI') ? 
+      '***configured***' : value;
+    console.log(`   ✅ ${key}: ${displayValue}`);
+  } else {
+    console.log(`   ⚠️  ${key}: not set (using defaults)`);
+  }
+});
+
+// Database configuration validation
+if (process.env.MONGODB_URI) {
+  console.log('📊 Database: MongoDB Atlas configured');
+} else {
+  console.log('📊 Database: Using mock data (no MongoDB connection)');
+}
+
+// OpenAI configuration validation
+const useOpenAI = process.env.USE_OPENAI !== 'false' && 
+                  process.env.OPENAI_API_KEY && 
+                  process.env.OPENAI_API_KEY !== 'your_openai_api_key_here' &&
+                  process.env.OPENAI_API_KEY !== 'sk-your-openai-api-key-here';
+
+if (useOpenAI) {
+  console.log('🤖 OpenAI: LIVE MODE (real API calls)');
+} else {
+  console.log('🤖 OpenAI: MOCK MODE (simulated responses)');
+}
+
+console.log('✅ Environment validation complete\n');
+
 // Import custom middleware and utilities
 const { errorHandler, asyncHandler, notFound } = require('./middleware/errorHandler');
 const { performanceMonitor, getSystemHealth, requestLogger } = require('./middleware/monitoring');
@@ -303,14 +358,32 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ULTRA-SIMPLE health check - must be first and not depend on anything
 app.get('/health', (req, res) => {
-  res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({ 
+  const health = {
     status: 'ok',
     timestamp: new Date().toISOString(),
     uptime: Math.round(process.uptime()),
     port: port,
-    host: '0.0.0.0'
-  }));
+    host: '0.0.0.0',
+    environment: process.env.NODE_ENV || 'development',
+    services: {
+      database: process.env.MONGODB_URI ? 
+        (mongoose.connection.readyState === 1 ? 'connected' : 'connecting') : 
+        'mock-mode',
+      openai: process.env.OPENAI_API_KEY && 
+              process.env.OPENAI_API_KEY !== 'sk-your-openai-api-key-here' ? 
+        'configured' : 'mock-mode'
+    },
+    config: {
+      useOpenAI: process.env.USE_OPENAI !== 'false',
+      hasMongoURI: !!process.env.MONGODB_URI,
+      hasJWTSecret: !!process.env.JWT_SECRET,
+      hasOpenAIKey: !!(process.env.OPENAI_API_KEY && 
+                      process.env.OPENAI_API_KEY !== 'sk-your-openai-api-key-here')
+    }
+  };
+  
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(health, null, 2));
 });
 
 // Backup health endpoint
