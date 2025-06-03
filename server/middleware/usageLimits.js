@@ -58,6 +58,13 @@ const checkTranscriptLimits = async (req, res, next) => {
     const userId = req.user.id || req.user._id;
     const user = req.user;
     
+    // Admin emails get unlimited access
+    const adminEmails = ['alexfisher@mac.home', 'alexfisher.dev@gmail.com'];
+    if (user.email && adminEmails.includes(user.email)) {
+      console.log(`✅ Admin access granted for ${user.email}`);
+      return next(); // Skip all limits for admin
+    }
+    
     // Get user's current plan (default to free)
     const planId = user.subscription?.planId || 'free';
     const planLimits = PLAN_LIMITS[planId];
@@ -150,6 +157,14 @@ const checkFeatureAccess = (feature) => {
   return async (req, res, next) => {
     try {
       const user = req.user;
+      
+      // Admin emails get access to all features
+      const adminEmails = ['alexfisher@mac.home', 'alexfisher.dev@gmail.com'];
+      if (user.email && adminEmails.includes(user.email)) {
+        console.log(`✅ Admin feature access granted for ${user.email}: ${feature}`);
+        return next(); // Skip all feature restrictions for admin
+      }
+      
       const planId = user.subscription?.planId || 'free';
       const planLimits = PLAN_LIMITS[planId];
       

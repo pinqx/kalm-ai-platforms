@@ -12,6 +12,8 @@ import AdvancedAnalytics from './components/AdvancedAnalytics'
 import LandingPage from './components/LandingPage'
 import RealtimeDashboard from './components/RealtimeDashboard'
 import PaymentTester from './components/PaymentTester'
+import AdminDashboard from './components/AdminDashboard'
+import UsageDashboard from './components/UsageDashboard'
 import { 
   DocumentTextIcon, 
   EnvelopeIcon, 
@@ -51,7 +53,7 @@ interface TranscriptAnalysis {
   transcriptionConfidence?: number;
 }
 
-type ActiveTab = 'home' | 'upload' | 'email' | 'chat' | 'dashboard' | 'history' | 'pricing' | 'realtime' | 'collaboration' | 'advanced-analytics' | 'payment';
+type ActiveTab = 'home' | 'upload' | 'email' | 'chat' | 'dashboard' | 'history' | 'pricing' | 'realtime' | 'collaboration' | 'advanced-analytics' | 'payment' | 'admin' | 'usage';
 
 function App() {
   const [analysis, setAnalysis] = useState<TranscriptAnalysis | null>(null);
@@ -148,7 +150,13 @@ function App() {
     setActiveTab('payment');
   };
 
-  const tabs = [
+  // Check if current user is admin
+  const isAdmin = (user: any) => {
+    const adminEmails = ['alexfisher@mac.home', 'alexfisher.dev@gmail.com']; // Add your email here
+    return user && adminEmails.includes(user.email);
+  };
+
+  const allTabs = [
     { id: 'home', name: 'Home', icon: HomeIcon, color: 'blue' },
     { id: 'upload', name: 'Analysis', icon: DocumentTextIcon, color: 'indigo' },
     { id: 'realtime', name: 'Live', icon: BoltIcon, color: 'emerald' },
@@ -160,7 +168,17 @@ function App() {
     { id: 'collaboration', name: 'Collaboration', icon: UsersIcon, color: 'teal' },
     { id: 'advanced-analytics', name: 'Advanced Analytics', icon: TrophyIcon, color: 'purple' },
     { id: 'payment', name: 'Payment', icon: CurrencyDollarIcon, color: 'pink' },
+    { id: 'usage', name: 'Usage', icon: ChartBarIcon, color: 'yellow' },
+    { id: 'admin', name: 'Admin', icon: Cog6ToothIcon, color: 'red' }, // Admin tab
   ];
+
+  // Filter tabs based on user role
+  const tabs = allTabs.filter(tab => {
+    if (tab.id === 'admin') {
+      return isAdmin(user); // Only show admin tab to admin users
+    }
+    return true; // Show all other tabs to everyone
+  });
 
   const TabIcon = ({ icon: Icon, active, color }: { icon: any, active: boolean, color: string }) => (
     <Icon className={`h-5 w-5 transition-all duration-200 ${active ? `text-${color}-600` : 'text-gray-500 group-hover:text-gray-700'}`} />
@@ -526,6 +544,48 @@ function App() {
                     setSelectedPlan(null);
                   }}
                 />
+              </div>
+            )}
+
+            {activeTab === 'admin' && (
+              <div className="space-y-8 animate-fade-in">
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-200/50 p-8">
+                  <div className="flex items-center mb-6">
+                    <div className="w-12 h-12 bg-gradient-to-r from-teal-500 to-lime-600 rounded-xl flex items-center justify-center mr-4">
+                      <Cog6ToothIcon className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                        Admin Dashboard
+                      </h2>
+                      <p className="text-gray-600 text-lg">
+                        Manage and monitor system activities.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <AdminDashboard />
+              </div>
+            )}
+
+            {activeTab === 'usage' && (
+              <div className="space-y-8 animate-fade-in">
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-200/50 p-8">
+                  <div className="flex items-center mb-6">
+                    <div className="w-12 h-12 bg-gradient-to-r from-yellow-500 to-orange-600 rounded-xl flex items-center justify-center mr-4">
+                      <ChartBarIcon className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                        Usage Dashboard
+                      </h2>
+                      <p className="text-gray-600 text-lg">
+                        Track usage and performance metrics.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <UsageDashboard />
               </div>
             )}
           </div>

@@ -2571,6 +2571,38 @@ app.get('/api/usage/stats',
   asyncHandler(async (req, res) => {
     try {
       const userId = req.user.id || req.user._id;
+      
+      // Admin emails get enterprise-level access
+      const adminEmails = ['alexfisher@mac.home', 'alexfisher.dev@gmail.com'];
+      if (req.user.email && adminEmails.includes(req.user.email)) {
+        console.log(`✅ Admin usage stats access for ${req.user.email}`);
+        
+        const usageStats = await getUserUsageStats(userId);
+        const adminResponse = {
+          currentPlan: 'enterprise',
+          limits: PLAN_LIMITS['enterprise'],
+          usage: {
+            monthly: {
+              used: usageStats?.monthly || 0,
+              limit: 0, // unlimited
+              remaining: 'unlimited',
+              percentage: 0
+            },
+            daily: {
+              used: usageStats?.daily || 0,
+              limit: 0, // unlimited
+              remaining: 'unlimited', 
+              percentage: 0
+            },
+            total: usageStats?.total || 0
+          },
+          features: PLAN_LIMITS['enterprise'].features,
+          upgradeSuggestions: [] // No suggestions for admin
+        };
+        
+        return res.json(adminResponse);
+      }
+      
       const planId = req.user.subscription?.planId || 'free';
       const planLimits = PLAN_LIMITS[planId];
       
@@ -2614,9 +2646,19 @@ app.get('/api/usage/stats',
 // Admin endpoint - Get all users and their usage
 app.get('/api/admin/users', 
   authenticateToken,
-  // checkFeatureAccess('adminDashboard'), // Uncomment when admin roles are implemented
   asyncHandler(async (req, res) => {
     try {
+      // Check if user is admin based on email
+      const adminEmails = ['alexfisher@mac.home', 'alexfisher.dev@gmail.com'];
+      if (!req.user.email || !adminEmails.includes(req.user.email)) {
+        return res.status(403).json({ 
+          error: 'Access denied. Admin privileges required.',
+          code: 'ADMIN_ACCESS_DENIED'
+        });
+      }
+      
+      console.log(`✅ Admin dashboard access granted for ${req.user.email}`);
+      
       // For now, anyone can access this for demo purposes
       // In production, you'd check for admin role
       
