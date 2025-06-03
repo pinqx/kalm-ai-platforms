@@ -2844,6 +2844,64 @@ function generateUpgradeSuggestions(currentPlan, usageStats) {
   return suggestions;
 }
 
+// Temporary admin user creation endpoint (remove after testing)
+app.post('/api/debug/create-admin', asyncHandler(async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(500).json({ error: 'Database not connected' });
+    }
+
+    // Check if admin user already exists
+    let adminUser = await User.findOne({ email: 'alex@kalm.live' });
+    
+    if (!adminUser) {
+      console.log('🔧 Creating admin user for testing...');
+      adminUser = new User({
+        email: 'alex@kalm.live',
+        password: 'AdminPassword123!', // You should change this
+        firstName: 'Alex',
+        lastName: 'Admin',
+        company: 'KALM AI',
+        role: 'admin',
+        subscription: {
+          planId: 'enterprise',
+          status: 'active'
+        }
+      });
+      await adminUser.save();
+      console.log('✅ Admin user created successfully');
+    } else {
+      console.log('ℹ️ Admin user already exists');
+    }
+
+    // Generate a token for the admin user
+    const token = jwt.sign(
+      { id: adminUser._id, email: adminUser.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    res.json({
+      message: 'Admin user ready',
+      user: {
+        id: adminUser._id,
+        email: adminUser.email,
+        firstName: adminUser.firstName,
+        lastName: adminUser.lastName,
+        fullName: adminUser.fullName,
+        role: adminUser.role,
+        company: adminUser.company
+      },
+      token,
+      instructions: 'Use this token to test admin endpoints'
+    });
+
+  } catch (error) {
+    console.error('Admin user creation error:', error);
+    res.status(500).json({ error: 'Failed to create admin user', details: error.message });
+  }
+}));
+
 // Debug endpoint for testing authentication
 app.get('/api/debug/auth', authenticateToken, asyncHandler(async (req, res) => {
   res.json({
