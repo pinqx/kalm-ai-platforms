@@ -391,6 +391,9 @@ function App() {
                   progress={analysisProgress}
                   stage={analysisStage}
                   analysis={analysis}
+                  onNavigateToEmail={() => setActiveTab('email')}
+                  onNavigateToChat={() => setActiveTab('chat')}
+                  onNavigateToAnalytics={() => setActiveTab('dashboard')}
                 />
               </div>
             )}

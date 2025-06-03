@@ -28,6 +28,9 @@ interface AnalysisTabProps {
   progress: number;
   stage: string;
   analysis: Analysis | null;
+  onNavigateToEmail?: () => void;
+  onNavigateToChat?: () => void;
+  onNavigateToAnalytics?: () => void;
 }
 
 const AnalysisTab: React.FC<AnalysisTabProps> = ({
@@ -35,7 +38,10 @@ const AnalysisTab: React.FC<AnalysisTabProps> = ({
   isAnalyzing,
   progress,
   stage,
-  analysis
+  analysis,
+  onNavigateToEmail,
+  onNavigateToChat,
+  onNavigateToAnalytics
 }) => {
   const [uploadMode, setUploadMode] = useState<'text' | 'audio'>('text');
   const [file, setFile] = useState<File | null>(null);
@@ -394,13 +400,22 @@ const AnalysisTab: React.FC<AnalysisTabProps> = ({
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl p-8 border border-blue-200">
             <h4 className="text-xl font-bold text-gray-900 mb-6 text-center">What's Next?</h4>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
+              <button
+                onClick={onNavigateToEmail}
+                className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
+              >
                 📧 Generate Follow-up Email
               </button>
-              <button className="px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
+              <button
+                onClick={onNavigateToChat}
+                className="px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
+              >
                 🤖 Chat with AI Assistant
               </button>
-              <button className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg">
+              <button
+                onClick={onNavigateToAnalytics}
+                className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg"
+              >
                 📊 View Analytics
               </button>
             </div>
