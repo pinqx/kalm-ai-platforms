@@ -6,7 +6,6 @@ import ChatInterface from './components/ChatInterface'
 import AuthModal from './components/AuthModal'
 import TranscriptHistory from './components/TranscriptHistory'
 import PricingPage from './components/PricingPage'
-import PaymentComponent from './components/PaymentComponent'
 import Analytics from './components/Analytics'
 import AdvancedAnalytics from './components/AdvancedAnalytics'
 import LandingPage from './components/LandingPage'
@@ -54,7 +53,7 @@ interface TranscriptAnalysis {
   transcriptionConfidence?: number;
 }
 
-type ActiveTab = 'home' | 'upload' | 'email' | 'chat' | 'dashboard' | 'history' | 'pricing' | 'realtime' | 'collaboration' | 'advanced-analytics' | 'payment' | 'admin' | 'usage';
+type ActiveTab = 'home' | 'upload' | 'email' | 'chat' | 'dashboard' | 'history' | 'pricing' | 'realtime' | 'collaboration' | 'advanced-analytics' | 'admin' | 'usage';
 
 function App() {
   const [analysis, setAnalysis] = useState<TranscriptAnalysis | null>(null);
@@ -156,7 +155,6 @@ function App() {
 
   const handleSelectPlan = (plan: any) => {
     setSelectedPlan(plan);
-    setActiveTab('payment');
   };
 
   // Check if current user is admin
@@ -182,7 +180,6 @@ function App() {
     { id: 'pricing', name: 'Pricing', icon: CurrencyDollarIcon, color: 'pink' },
     { id: 'collaboration', name: 'Collaboration', icon: UsersIcon, color: 'teal' },
     { id: 'advanced-analytics', name: 'Advanced Analytics', icon: TrophyIcon, color: 'purple' },
-    { id: 'payment', name: 'Payment', icon: CurrencyDollarIcon, color: 'pink' },
     { id: 'usage', name: 'Usage', icon: ChartBarIcon, color: 'yellow' },
     { id: 'admin', name: 'Admin', icon: Cog6ToothIcon, color: 'red' }, // Admin tab
   ];
@@ -540,33 +537,6 @@ function App() {
                   </div>
                 </div>
                 <AdvancedAnalytics user={user} token={token} />
-              </div>
-            )}
-
-            {activeTab === 'payment' && (
-              <div className="space-y-8 animate-fade-in">
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-200/50 p-8">
-                  <div className="flex items-center mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-r from-pink-500 to-red-600 rounded-xl flex items-center justify-center mr-4">
-                      <CurrencyDollarIcon className="h-6 w-6 text-white" />
-                    </div>
-                    <div>
-                      <h2 className="text-3xl font-bold text-gray-900 mb-2">
-                        Payment
-                      </h2>
-                      <p className="text-gray-600 text-lg">
-                        Complete your payment to access all features.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <PaymentComponent 
-                  selectedPlan={selectedPlan}
-                  onSuccess={() => {
-                    setActiveTab('dashboard');
-                    setSelectedPlan(null);
-                  }}
-                />
               </div>
             )}
 

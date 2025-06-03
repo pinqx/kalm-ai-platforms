@@ -1,20 +1,37 @@
-import React from 'react';
-import { CheckIcon, XMarkIcon, StarIcon, SparklesIcon, CurrencyDollarIcon, UsersIcon } from '@heroicons/react/24/solid';
+import React, { useState, useEffect } from 'react';
+import { CheckIcon, XMarkIcon, StarIcon, SparklesIcon, CurrencyDollarIcon, UsersIcon, ShieldCheckIcon, CreditCardIcon, CheckCircleIcon } from '@heroicons/react/24/solid';
+import StripePaymentForm from './StripePaymentForm';
 
-const plans = [
+interface PricingPlan {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+  icon: any;
+  color: string;
+  features: string[];
+  notIncluded: string[];
+  popular: boolean;
+  stripePriceId?: string;
+}
+
+const plans: PricingPlan[] = [
   {
     id: 'starter',
     name: 'Starter',
     price: 29,
-    description: 'Perfect for individual sales reps',
+    description: 'Perfect for individual sales professionals',
     icon: CurrencyDollarIcon,
     color: 'from-green-500 to-emerald-600',
+    stripePriceId: 'price_starter_monthly',
     features: [
-      'Up to 50 transcript analyses/month',
-      'Basic AI insights',
+      'Up to 50 transcript analyses per month',
+      'Basic AI insights and sentiment analysis',
       'Email template generation',
       'Individual dashboard',
       'Email support',
+      'Mobile app access',
+      'Basic objection analysis'
     ],
     notIncluded: [
       'Team collaboration',
@@ -31,15 +48,18 @@ const plans = [
     description: 'Best for growing sales teams',
     icon: UsersIcon,
     color: 'from-blue-500 to-indigo-600',
+    stripePriceId: 'price_professional_monthly',
     features: [
       'Unlimited transcript analyses',
-      'Advanced AI coaching',
+      'Advanced AI coaching and insights',
       'Team collaboration features',
+      'Real-time live dashboard',
+      'Advanced analytics & reporting',
       'CRM integrations',
-      'Custom templates',
-      'Video call integration',
+      'Custom email templates',
       'Priority support',
-      'Advanced analytics',
+      'Team chat and presence',
+      'Competitor mention tracking'
     ],
     notIncluded: [
       'SSO integration',
@@ -52,18 +72,23 @@ const plans = [
     id: 'enterprise',
     name: 'Enterprise',
     price: 149,
-    description: 'For large sales organizations',
+    description: 'Complete solution for large organizations',
     icon: SparklesIcon,
     color: 'from-purple-500 to-pink-600',
+    stripePriceId: 'price_enterprise_monthly',
     features: [
       'Everything in Professional',
       'SSO integration',
-      'Advanced analytics & reporting',
-      'Custom AI training',
+      'Advanced predictive analytics',
+      'Custom AI model training',
       'White-label options',
       'Dedicated customer success manager',
       'API access',
       'Advanced security features',
+      'Custom integrations',
+      'Phone support',
+      'Service level agreements',
+      'Advanced compliance features'
     ],
     notIncluded: [],
     popular: false,
@@ -71,10 +96,88 @@ const plans = [
 ];
 
 interface PricingPageProps {
-  onSelectPlan?: (plan: typeof plans[0]) => void;
+  onSelectPlan?: (plan: PricingPlan) => void;
 }
 
 export default function PricingPage({ onSelectPlan }: PricingPageProps) {
+  const [selectedPlanForPayment, setSelectedPlanForPayment] = useState<PricingPlan | null>(null);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+
+  const handlePlanSelect = (plan: PricingPlan) => {
+    setSelectedPlanForPayment(plan);
+    onSelectPlan?.(plan);
+  };
+
+  const handlePaymentSuccess = () => {
+    setPaymentSuccess(true);
+    
+    // Reset after showing success
+    setTimeout(() => {
+      setPaymentSuccess(false);
+      setSelectedPlanForPayment(null);
+    }, 5000);
+  };
+
+  const handleBackToPlans = () => {
+    setSelectedPlanForPayment(null);
+  };
+
+  // Payment success screen
+  if (paymentSuccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-16 px-4">
+        <div className="max-w-2xl mx-auto text-center">
+          <div className="bg-white rounded-2xl shadow-xl p-8">
+            <CheckCircleIcon className="h-16 w-16 text-green-500 mx-auto mb-4" />
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Payment Successful!</h2>
+            <p className="text-lg text-gray-600 mb-6">
+              Welcome to the {selectedPlanForPayment?.name} plan!
+            </p>
+            <p className="text-sm text-gray-500 mb-6">
+              You'll receive a confirmation email shortly. Your subscription is now active.
+            </p>
+            <button
+              onClick={() => {
+                setPaymentSuccess(false);
+                setSelectedPlanForPayment(null);
+              }}
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              Continue to Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Payment form screen
+  if (selectedPlanForPayment) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-16 px-4">
+        <div className="max-w-md mx-auto">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Complete Your Purchase</h2>
+            <div className="text-lg text-gray-600">
+              {selectedPlanForPayment.name} Plan - ${selectedPlanForPayment.price}/month
+            </div>
+          </div>
+          
+          <StripePaymentForm
+            amount={selectedPlanForPayment.price}
+            planId={selectedPlanForPayment.id}
+            onSuccess={handlePaymentSuccess}
+            onError={(error) => {
+              console.error('Payment error:', error);
+            }}
+            onCancel={handleBackToPlans}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Main pricing page
   return (
     <div className="bg-gradient-to-br from-gray-50 via-white to-blue-50 py-24 sm:py-32 overflow-hidden">
       <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -83,6 +186,10 @@ export default function PricingPage({ onSelectPlan }: PricingPageProps) {
             <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center">
               <CurrencyDollarIcon className="h-8 w-8 text-white" />
             </div>
+          </div>
+          <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium mb-6">
+            <ShieldCheckIcon className="h-4 w-4 mr-2" />
+            30-day money-back guarantee
           </div>
           <h2 className="text-lg font-semibold leading-7 text-blue-600 mb-4">Transparent Pricing</h2>
           <p className="text-5xl font-bold tracking-tight text-gray-900 sm:text-6xl mb-6">
@@ -142,9 +249,9 @@ export default function PricingPage({ onSelectPlan }: PricingPageProps) {
                     <span className="text-5xl font-bold tracking-tight text-gray-900">
                       ${plan.price}
                     </span>
-                    <span className="text-lg font-semibold text-gray-500">/user/month</span>
+                    <span className="text-lg font-semibold text-gray-500">/month</span>
                   </div>
-                  <p className="text-sm text-gray-500 mt-2">Billed annually • 20% savings</p>
+                  <p className="text-sm text-gray-500 mt-2">Billed monthly • 14-day free trial</p>
                 </div>
                 
                 <button
@@ -153,9 +260,9 @@ export default function PricingPage({ onSelectPlan }: PricingPageProps) {
                       ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700'
                       : 'bg-gradient-to-r from-gray-800 to-gray-900 text-white hover:from-gray-700 hover:to-gray-800'
                   }`}
-                  onClick={() => onSelectPlan?.(plan)}
+                  onClick={() => handlePlanSelect(plan)}
                 >
-                  Start Free Trial
+                  Get Started
                 </button>
                 
                 <div className="space-y-4">
@@ -182,6 +289,24 @@ export default function PricingPage({ onSelectPlan }: PricingPageProps) {
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Trust Indicators */}
+        <div className="mt-16 text-center">
+          <div className="flex items-center justify-center space-x-8 text-gray-500">
+            <div className="flex items-center">
+              <ShieldCheckIcon className="h-5 w-5 mr-2" />
+              <span className="text-sm">256-bit SSL encryption</span>
+            </div>
+            <div className="flex items-center">
+              <CheckIcon className="h-5 w-5 mr-2" />
+              <span className="text-sm">30-day money back</span>
+            </div>
+            <div className="flex items-center">
+              <CreditCardIcon className="h-5 w-5 mr-2" />
+              <span className="text-sm">Secure payments</span>
+            </div>
+          </div>
         </div>
 
         <div className="mt-20 text-center animate-fade-in" style={{ animationDelay: '0.6s' }}>
