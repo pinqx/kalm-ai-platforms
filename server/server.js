@@ -404,44 +404,28 @@ const handleValidationErrors = (req, res, next) => {
 
 // Root route - API information
 app.get('/', (req, res) => {
-  res.json({
-    name: "AI Sales Enablement Platform API",
-    version: "2.0.0",
-    status: "🚀 Operational",
-    features: [
-      "🤖 Real AI-Powered Analysis",
-      "📄 Advanced Transcript Processing",
-      "📧 Smart Email Generation",
-      "💬 Intelligent Chat Assistant",
-      "📊 Analytics & Insights",
-      "🔐 User Authentication",
-      "📈 Performance Tracking"
-    ],
-    endpoints: {
-      health: "GET /health",
-      auth: {
-        register: "POST /api/auth/register",
-        login: "POST /api/auth/login",
-        profile: "GET /api/auth/profile"
-      },
-      transcripts: {
-        analyze: "POST /api/analyze-transcript",
-        list: "GET /api/transcripts",
-        get: "GET /api/transcripts/:id",
-        delete: "DELETE /api/transcripts/:id"
-      },
-      ai: {
-        generateEmail: "POST /api/generate-email",
-        chat: "POST /api/chat"
-      },
-      analytics: "GET /api/analytics"
-    },
-    documentation: "https://docs.ai-sales-platform.com"
+  res.status(200).json({ 
+    message: 'KALM AI Sales Platform API',
+    status: 'running',
+    version: '2.0.0',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Simple health check endpoint (prioritize reliability over features)
+app.get('/health', (req, res) => {
+  // Super simple health check that should always work
+  res.status(200).json({ 
+    status: 'ok', 
+    timestamp: new Date().toISOString(),
+    uptime: Math.round(process.uptime()),
+    port: port,
+    pid: process.pid
   });
 });
 
 // Enhanced health check endpoint with system metrics
-app.get('/health', asyncHandler(async (req, res) => {
+app.get('/health/detailed', asyncHandler(async (req, res) => {
   const systemHealth = getSystemHealth();
   
   const health = {
@@ -477,7 +461,7 @@ app.get('/health', asyncHandler(async (req, res) => {
     res.status(503);
   }
   
-  logger.info('Health check requested', { 
+  logger.info('Detailed health check requested', { 
     ip: req.ip, 
     userAgent: req.get('User-Agent'),
     status: health.status 
@@ -688,27 +672,27 @@ app.get('/api/auth/profile', authenticateToken, async (req, res) => {
 
 // Enhanced transcript analysis with audio transcription support
 app.post('/api/analyze-transcript', authenticateToken, upload.single('transcript'), asyncHandler(async (req, res) => {
-  console.log('Transcript analysis called');
-  
-  if (!req.file) {
-    return res.status(400).json({ error: 'No transcript file provided' });
-  }
+    console.log('Transcript analysis called');
+    
+    if (!req.file) {
+      return res.status(400).json({ error: 'No transcript file provided' });
+    }
 
   console.log('File received:', req.file.originalname, 'Type:', req.file.mimetype);
 
-  // Generate unique analysis ID
-  const analysisId = `analysis_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  
-  // Emit analysis start event
-  io.emit('analysisStart', {
-    analysisId,
-    filename: req.file.originalname,
+    // Generate unique analysis ID
+    const analysisId = `analysis_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Emit analysis start event
+    io.emit('analysisStart', {
+      analysisId,
+      filename: req.file.originalname,
     fileType: req.file.mimetype,
-    startedBy: req.user.email || 'Anonymous',
-    timestamp: new Date()
-  });
+      startedBy: req.user.email || 'Anonymous',
+      timestamp: new Date()
+    });
 
-  let transcriptText;
+    let transcriptText;
   let audioMetadata = null;
 
   try {
@@ -769,24 +753,24 @@ app.post('/api/analyze-transcript', authenticateToken, upload.single('transcript
 
     } else {
       // Handle text file
-      try {
-        transcriptText = await fs.readFile(req.file.path, 'utf-8');
-        
+    try {
+      transcriptText = await fs.readFile(req.file.path, 'utf-8');
+      
         // Emit progress update for text processing
-        io.emit('analysisProgress', {
-          analysisId,
-          progress: 25,
+      io.emit('analysisProgress', {
+        analysisId,
+        progress: 25,
           stage: 'Text file processed',
-          timestamp: new Date()
-        });
-      } catch (error) {
+        timestamp: new Date()
+      });
+    } catch (error) {
         console.error('Error reading text file:', error);
-        io.emit('analysisError', {
-          analysisId,
-          error: 'Failed to read transcript file',
-          timestamp: new Date()
-        });
-        return res.status(400).json({ error: 'Failed to read transcript file' });
+      io.emit('analysisError', {
+        analysisId,
+        error: 'Failed to read transcript file',
+        timestamp: new Date()
+      });
+      return res.status(400).json({ error: 'Failed to read transcript file' });
       }
     }
 

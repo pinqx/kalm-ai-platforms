@@ -6,9 +6,11 @@ watchPatterns = ["server/**"]
 [deploy]
 startCommand = "node start.js"
 healthcheckPath = "/health"
-healthcheckTimeout = 300
+healthcheckTimeout = 30
+healthcheckInterval = 10
 restartPolicyType = "on_failure"
 numReplicas = 1
 
 [env]
-NODE_ENV = "production" 
+NODE_ENV = "production"
+PORT = 3000 
