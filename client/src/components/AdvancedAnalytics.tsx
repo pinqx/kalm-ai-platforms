@@ -19,6 +19,7 @@ import {
   ExclamationTriangleIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline';
+import { getApiUrl } from '../config';
 
 interface AdvancedAnalyticsData {
   // Basic analytics
@@ -75,7 +76,7 @@ const AdvancedAnalytics: React.FC<AdvancedAnalyticsProps> = ({ user, token }) =>
   const fetchAdvancedAnalytics = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:3007/api/advanced-analytics?range=${timeRange}`, {
+      const response = await fetch(`${getApiUrl()}/api/advanced-analytics?range=${timeRange}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },

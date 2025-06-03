@@ -30,6 +30,7 @@ import {
   ArrowRightOnRectangleIcon,
   TrophyIcon
 } from '@heroicons/react/24/outline'
+import { getApiUrl } from './config'
 
 interface TranscriptAnalysis {
   summary: string;
@@ -116,7 +117,7 @@ function App() {
     setAnalysisStage('Uploading file...');
     
     try {
-      const response = await fetch('http://localhost:3007/api/analyze-transcript', {
+      const response = await fetch(`${getApiUrl()}/api/analyze-transcript`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token || 'demo-token'}`,
@@ -449,7 +450,7 @@ function App() {
                     </div>
                   </div>
                 </div>
-                <RealtimeDashboard />
+                <RealtimeDashboard user={user} />
               </div>
             )}
 

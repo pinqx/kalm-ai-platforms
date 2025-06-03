@@ -8,8 +8,11 @@ import {
   UserIcon,
   ArrowTrendingUpIcon,
   ArrowTrendingDownIcon,
-  MinusIcon
+  MinusIcon,
+  CheckCircleIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
+import { getApiUrl } from '../config';
 
 interface Transcript {
   _id: string;
@@ -37,15 +40,15 @@ export default function TranscriptHistory({ onSelectTranscript, user, token }: T
   const [transcripts, setTranscripts] = useState<Transcript[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [page, setPage] = useState(1);
-  const [pagination, setPagination] = useState({ current: 1, pages: 1, total: 0 });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   console.log('TranscriptHistory component rendered with user:', !!user, 'token:', !!token);
 
-  const fetchTranscripts = async (pageNum = 1) => {
+  const fetchTranscripts = async (pageNum: number) => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:3007/api/transcripts?page=${pageNum}&limit=10`, {
+      const response = await fetch(`${getApiUrl()}/api/transcripts?page=${pageNum}&limit=10`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -58,7 +61,8 @@ export default function TranscriptHistory({ onSelectTranscript, user, token }: T
       }
 
       setTranscripts(data.transcripts || []);
-      setPagination(data.pagination || { current: 1, pages: 1, total: 0 });
+      setCurrentPage(data.pagination?.current || 1);
+      setTotalPages(data.pagination?.pages || 1);
     } catch (error: any) {
       setError(error.message);
       console.error('Error fetching transcripts:', error);
@@ -69,11 +73,11 @@ export default function TranscriptHistory({ onSelectTranscript, user, token }: T
 
   useEffect(() => {
     if (user && token) {
-      fetchTranscripts(page);
+      fetchTranscripts(1);
     } else {
       setLoading(false);
     }
-  }, [user, token, page]);
+  }, [user, token]);
 
   const getSentimentIcon = (sentiment: string) => {
     switch (sentiment) {
@@ -103,7 +107,7 @@ export default function TranscriptHistory({ onSelectTranscript, user, token }: T
     }
 
     try {
-      const response = await fetch(`http://localhost:3007/api/transcripts/${transcriptId}`, {
+      const response = await fetch(`${getApiUrl()}/api/transcripts/${transcriptId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -118,6 +122,24 @@ export default function TranscriptHistory({ onSelectTranscript, user, token }: T
       }
     } catch (error: any) {
       setError(error.message);
+    }
+  };
+
+  const viewTranscript = async (transcriptId: string) => {
+    try {
+      const response = await fetch(`${getApiUrl()}/api/transcripts/${transcriptId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        onSelectTranscript(data);
+      }
+    } catch (error) {
+      console.error('Error viewing transcript:', error);
     }
   };
 
@@ -163,7 +185,7 @@ export default function TranscriptHistory({ onSelectTranscript, user, token }: T
         <div className="bg-red-50 border border-red-200 rounded-2xl p-6">
           <p className="text-red-700 text-lg mb-4">{error}</p>
           <button
-            onClick={() => fetchTranscripts(page)}
+            onClick={() => fetchTranscripts(1)}
             className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors duration-200"
           >
             Try again
@@ -188,7 +210,7 @@ export default function TranscriptHistory({ onSelectTranscript, user, token }: T
       <div className="p-6 border-b border-gray-200">
         <h3 className="text-lg font-semibold text-gray-900">Transcript History</h3>
         <p className="text-gray-500 text-sm mt-1">
-          {pagination.total} transcript{pagination.total !== 1 ? 's' : ''} analyzed
+          {totalPages} page{totalPages !== 1 ? 's' : ''} of {totalPages}
         </p>
       </div>
 
@@ -247,7 +269,7 @@ export default function TranscriptHistory({ onSelectTranscript, user, token }: T
 
               <div className="flex items-center space-x-2 ml-4">
                 <button
-                  onClick={() => onSelectTranscript(transcript)}
+                  onClick={() => viewTranscript(transcript._id)}
                   className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md"
                   title="View Analysis"
                 >
@@ -266,23 +288,23 @@ export default function TranscriptHistory({ onSelectTranscript, user, token }: T
         ))}
       </div>
 
-      {pagination.pages > 1 && (
+      {totalPages > 1 && (
         <div className="p-6 border-t border-gray-200 flex justify-between items-center">
           <button
-            onClick={() => setPage(Math.max(1, page - 1))}
-            disabled={page === 1}
+            onClick={() => fetchTranscripts(Math.max(1, currentPage - 1))}
+            disabled={currentPage === 1}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Previous
           </button>
           
           <span className="text-sm text-gray-500">
-            Page {pagination.current} of {pagination.pages}
+            Page {currentPage} of {totalPages}
           </span>
           
           <button
-            onClick={() => setPage(Math.min(pagination.pages, page + 1))}
-            disabled={page === pagination.pages}
+            onClick={() => fetchTranscripts(Math.min(totalPages, currentPage + 1))}
+            disabled={currentPage === totalPages}
             className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Next
