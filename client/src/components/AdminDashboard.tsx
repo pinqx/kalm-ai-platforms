@@ -338,9 +338,9 @@ const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      fetchAdminData(currentPage);
+      fetchAdminData();
     }
-  }, [currentPage, isAuthenticated]);
+  }, [isAuthenticated]);
 
   const handleAuthenticate = (email: string) => {
     setIsAuthenticated(true);
@@ -358,36 +358,36 @@ const AdminDashboard: React.FC = () => {
     return <AdminLogin onAuthenticate={handleAuthenticate} />;
   }
 
-  const fetchAdminData = async (page: number) => {
+  const fetchAdminData = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setError('Authentication required');
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
-      setError(''); // Clear any previous errors
+      setError('');
       
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${getApiUrl()}/api/admin/users?page=${page}&limit=20`, {
+      const response = await fetch(`${getApiUrl()}/api/admin/users`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        setAdminData(data);
-        setUsingMockData(false);
+      if (!response.ok) {
+        setError('Failed to load admin data');
+        setLoading(false);
         return;
       }
-      
-      // If admin endpoint is not available, show bot simulation data
-      console.log('Admin endpoint not available, using bot simulation data');
-      setUsingMockData(true);
-      setAdminData(BOT_SIMULATION_DATA);
-      
+
+      const data = await response.json();
+      setAdminData(data);
+      setUsingMockData(false);
     } catch (error: any) {
       console.error('Error fetching admin data:', error);
-      // Even on error, show bot simulation data for seamless admin experience
-      console.log('Falling back to bot simulation data due to error');
-      setUsingMockData(true);
-      setAdminData(BOT_SIMULATION_DATA);
+      setError('Failed to load admin data. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -450,24 +450,6 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Mock Data Banner */}
-      {usingMockData && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-amber-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-amber-800">
-                <strong>Demo Mode:</strong> Showing sample data while admin endpoints are being deployed. Real admin features coming soon!
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-      
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

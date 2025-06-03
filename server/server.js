@@ -495,72 +495,22 @@ mongoose.connection.on('reconnected', () => {
 });
 
 // Authentication middleware
-const authenticateToken = async (req, res, next) => {
+const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
-    // In development, allow requests without auth
-    if (process.env.NODE_ENV === 'development' || mongoose.connection.readyState !== 1) {
-      req.user = { id: 'dev-user', email: 'dev@example.com' };
-      return next();
-    }
     return res.status(401).json({ error: 'Access token required' });
   }
 
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'dev-secret-key');
-    
-    // In development mode without MongoDB, use mock user data but preserve real email
-    if (mongoose.connection.readyState !== 1) {
-      req.user = {
-        id: decoded.id,
-        email: decoded.email, // Keep real email from token
-        firstName: 'Demo',
-        lastName: 'User',
-        isActive: true
-      };
-      return next();
-    }
-    
-    // Production mode - look up real user in database
-    const user = await User.findById(decoded.id);
-    if (!user || !user.isActive) {
-      return res.status(401).json({ error: 'Invalid or inactive user' });
+  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+    if (err) {
+      console.error('Token verification failed:', err.message);
+      return res.status(403).json({ error: 'Invalid or expired token' });
     }
     req.user = user;
     next();
-  } catch (error) {
-    // When MongoDB is connected but token is invalid, create/find a development user
-    if (mongoose.connection.readyState === 1) {
-      try {
-        // Try to find an existing development user, or create one
-        let devUser = await User.findOne({ email: 'dev@example.com' });
-        if (!devUser) {
-          console.log('⚠️  Creating development user for testing...');
-          devUser = new User({
-            email: 'dev@example.com',
-            password: 'dev123456',
-            firstName: 'Development',
-            lastName: 'User',
-            company: 'Development Company',
-            role: 'sales_rep'
-          });
-          await devUser.save();
-        }
-        req.user = devUser;
-        return next();
-      } catch (dbError) {
-        console.error('Error creating development user:', dbError);
-        return res.status(403).json({ error: 'Invalid token' });
-      }
-    } else {
-      // In development mode without MongoDB, be more lenient with token errors
-      console.log('⚠️  Development mode: Using fallback user for invalid token');
-      req.user = { id: 'dev-user-fallback', email: 'dev@example.com' };
-      return next();
-    }
-  }
+  });
 };
 
 // Error handling middleware
@@ -655,74 +605,32 @@ app.get('/api/system/metrics', asyncHandler(async (req, res) => {
 app.post('/api/auth/register', [
   body('email').isEmail().normalizeEmail(),
   body('password').isLength({ min: 6 }),
-  body('firstName').trim().isLength({ min: 1 }),
-  body('lastName').trim().isLength({ min: 1 })
+  body('firstName').isLength({ min: 1 }),
+  body('lastName').isLength({ min: 1 }),
+  body('company').optional()
 ], handleValidationErrors, async (req, res) => {
   try {
     const { email, password, firstName, lastName, company } = req.body;
     
-    // In development mode without MongoDB, use mock registration
-    if (mongoose.connection.readyState !== 1) {
-      console.log('⚠️  Development mode: Using mock user registration');
-      
-      const mockUser = {
-        id: 'dev-user-' + Date.now(),
-        email,
-        firstName,
-        lastName,
-        fullName: `${firstName} ${lastName}`,
-        role: 'sales_rep',
-        company: company || 'Development Company'
-      };
-
-      const token = jwt.sign(
-        { id: mockUser.id, email: mockUser.email },
-        process.env.JWT_SECRET || 'dev-secret-key',
-        { expiresIn: '7d' }
-      );
-
-      return res.status(201).json({
-        message: 'User registered successfully (development mode)',
-        token,
-        user: mockUser
-      });
-    }
-    
+    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ error: 'Email already registered' });
+      return res.status(400).json({ error: 'User already exists' });
     }
 
+    // Create new user
     const user = new User({
       email,
-      password,
+      password, // Will be hashed by the model pre-save middleware
       firstName,
       lastName,
-      company
+      company: company || 'Not specified',
+      role: 'sales_rep'
     });
 
     await user.save();
 
-    // Send welcome email
-    const emailResult = await emailService.sendWelcomeEmail(
-      user.email, 
-      user.firstName || user.name || 'New User'
-    );
-
-    if (emailResult.success) {
-      logger.info('Welcome email sent successfully', {
-        userId: user._id,
-        userEmail: user.email,
-        messageId: emailResult.messageId
-      });
-    } else {
-      logger.warn('Failed to send welcome email', {
-        userId: user._id,
-        userEmail: user.email,
-        error: emailResult.error
-      });
-    }
-
+    // Generate JWT token
     const token = jwt.sign(
       { id: user._id, email: user.email },
       process.env.JWT_SECRET,
@@ -738,13 +646,13 @@ app.post('/api/auth/register', [
         firstName: user.firstName,
         lastName: user.lastName,
         fullName: user.fullName,
-        role: user.role,
-        company: user.company
+        company: user.company,
+        role: user.role
       }
     });
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({ error: 'Failed to register user' });
+    res.status(500).json({ error: 'Registration failed' });
   }
 });
 
@@ -754,34 +662,6 @@ app.post('/api/auth/login', [
 ], handleValidationErrors, async (req, res) => {
   try {
     const { email, password } = req.body;
-    
-    // In development mode without MongoDB, use mock login
-    if (mongoose.connection.readyState !== 1) {
-      console.log('⚠️  Development mode: Using mock user login');
-      
-      const mockUser = {
-        id: 'dev-user-login',
-        email,
-        firstName: 'Demo',
-        lastName: 'User',
-        fullName: 'Demo User',
-        role: 'sales_rep',
-        company: 'Development Company',
-        lastLogin: new Date()
-      };
-
-      const token = jwt.sign(
-        { id: mockUser.id, email: mockUser.email },
-        process.env.JWT_SECRET || 'dev-secret-key',
-        { expiresIn: '7d' }
-      );
-
-      return res.json({
-        message: 'Login successful (development mode)',
-        token,
-        user: mockUser
-      });
-    }
     
     const user = await User.findOne({ email });
     if (!user || !user.isActive) {
@@ -830,6 +710,40 @@ app.get('/api/auth/profile', authenticateToken, async (req, res) => {
   } catch (error) {
     console.error('Profile error:', error);
     res.status(500).json({ error: 'Failed to fetch profile' });
+  }
+});
+
+// Transcript analysis endpoint
+app.post('/api/analyze-transcript', authenticateToken, async (req, res) => {
+  try {
+    const { transcript, title } = req.body;
+    
+    if (!transcript || transcript.trim().length === 0) {
+      return res.status(400).json({ error: 'Transcript content is required' });
+    }
+
+    // Analyze with OpenAI
+    const analysis = await analyzeTranscript(transcript);
+    
+    // Save to database
+    const newTranscript = new Transcript({
+      user: req.user.id,
+      title: title || `Transcript ${new Date().toLocaleDateString()}`,
+      content: transcript,
+      analysis,
+      createdAt: new Date()
+    });
+
+    await newTranscript.save();
+
+    res.json({
+      message: 'Transcript analyzed successfully',
+      transcriptId: newTranscript._id,
+      analysis
+    });
+  } catch (error) {
+    console.error('Transcript analysis error:', error);
+    res.status(500).json({ error: 'Failed to analyze transcript' });
   }
 });
 
@@ -1063,14 +977,8 @@ Be specific and actionable in your analysis.`
         const dbFileSize = req.file?.size || Buffer.byteLength(transcriptText, 'utf8');
         const dbMimeType = req.file?.mimetype || 'text/plain';
         
-        // Handle user ID properly for development vs production
-        let userId;
-        if (req.user._id && mongoose.Types.ObjectId.isValid(req.user._id)) {
-          userId = req.user._id;
-        } else {
-          // For development users without valid ObjectId, create a new ObjectId
-          userId = new mongoose.Types.ObjectId();
-        }
+        // Use the user ID from authentication
+        const userId = req.user.id;
 
         const transcript = new Transcript({
           userId: userId,
@@ -1089,11 +997,10 @@ Be specific and actionable in your analysis.`
         console.log('✅ Transcript saved to database successfully');
       } catch (dbError) {
         console.error('❌ Database save error:', dbError);
-        // Continue without saving to database in development
-        if (process.env.NODE_ENV === 'development') {
-          console.log('⚠️ Continuing without database save in development mode');
-        }
+        throw dbError; // Fail hard in production if database save fails
       }
+    } else {
+      throw new Error('Database connection required');
     }
 
     // Clean up uploaded file
@@ -1199,114 +1106,33 @@ app.get('/api/transcripts', authenticateToken, async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    // In development mode without MongoDB, return mock data
-    if (mongoose.connection.readyState !== 1) {
-      console.log('⚠️  Development mode: Returning mock transcript list');
-      
-      const mockTranscripts = [
-        {
-          _id: 'mock-transcript-1',
-          originalFileName: 'sales-call-acme-corp.txt',
-          createdAt: new Date(Date.now() - 86400000), // 1 day ago
-          status: 'completed',
-          formattedFileSize: '2.1 KB',
-          timeAgo: '1 day ago',
-          analysis: {
-            summary: 'Discussed AI solutions implementation. Client showed strong interest but had concerns about cost and timeline.',
-            objections: [
-              'Budget constraints and ROI concerns',
-              'Implementation timeline concerns',
-              'Integration complexity'
-            ],
-            actionItems: [
-              'Send detailed ROI analysis',
-              'Schedule technical demo',
-              'Provide pricing options'
-            ],
-            sentiment: 'positive',
-            confidence: 85
-          }
-        },
-        {
-          _id: 'mock-transcript-2', 
-          originalFileName: 'follow-up-tech-solutions.txt',
-          createdAt: new Date(Date.now() - 172800000), // 2 days ago
-          status: 'completed',
-          formattedFileSize: '1.8 KB',
-          timeAgo: '2 days ago',
-          analysis: {
-            summary: 'Follow-up on previous proposal. Addressed technical concerns and provided detailed implementation roadmap.',
-            objections: [
-              'Security and compliance concerns',
-              'Team training requirements',
-              'Migration timeline'
-            ],
-            actionItems: [
-              'Provide security documentation',
-              'Schedule training session',
-              'Create migration plan'
-            ],
-            sentiment: 'neutral',
-            confidence: 78
-          }
-        },
-        {
-          _id: 'mock-transcript-3',
-          originalFileName: 'discovery-call-startupxyz.txt',
-          createdAt: new Date(Date.now() - 259200000), // 3 days ago
-          status: 'completed',
-          formattedFileSize: '3.2 KB', 
-          timeAgo: '3 days ago',
-          analysis: {
-            summary: 'Initial discovery call to understand business needs and pain points. Identified key opportunities for automation.',
-            objections: [
-              'Limited budget for new tools',
-              'Current system integration concerns'
-            ],
-            actionItems: [
-              'Send case studies from similar companies',
-              'Prepare cost-benefit analysis',
-              'Schedule follow-up in 2 weeks'
-            ],
-            sentiment: 'positive',
-            confidence: 82
-          }
-        }
-      ];
-
-      // Simulate pagination
-      const startIndex = skip;
-      const endIndex = skip + limit;
-      const paginatedTranscripts = mockTranscripts.slice(startIndex, endIndex);
-
-      return res.json({
-        transcripts: paginatedTranscripts,
-        pagination: {
-          current: page,
-          pages: Math.ceil(mockTranscripts.length / limit),
-          total: mockTranscripts.length
-        }
-      });
-    }
-
-    const transcripts = await Transcript.find({ userId: req.user.id, isArchived: false })
+    const transcripts = await Transcript.find({ userId: req.user.id })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .select('-transcriptContent'); // Exclude large text content
+      .lean();
 
-    const total = await Transcript.countDocuments({ userId: req.user.id, isArchived: false });
+    const totalTranscripts = await Transcript.countDocuments({ userId: req.user.id });
+
+    // Format the transcripts
+    const formattedTranscripts = transcripts.map(transcript => ({
+      ...transcript,
+      formattedFileSize: formatFileSize(transcript.fileSize || 0),
+      timeAgo: getTimeAgo(transcript.createdAt)
+    }));
 
     res.json({
-      transcripts,
+      transcripts: formattedTranscripts,
       pagination: {
         current: page,
-        pages: Math.ceil(total / limit),
-        total
+        pages: Math.ceil(totalTranscripts / limit),
+        total: totalTranscripts,
+        hasNext: page < Math.ceil(totalTranscripts / limit),
+        hasPrev: page > 1
       }
     });
   } catch (error) {
-    console.error('Transcripts list error:', error);
+    console.error('Error fetching transcripts:', error);
     res.status(500).json({ error: 'Failed to fetch transcripts' });
   }
 });
@@ -1621,125 +1447,39 @@ What specific area would you like to focus on? I can provide detailed strategies
 // Analytics endpoint
 app.get('/api/analytics', authenticateToken, async (req, res) => {
   try {
-    if (mongoose.connection.readyState !== 1) {
-      // Return mock analytics data for development mode
-      console.log('⚠️  Development mode: Returning mock analytics');
-      return res.json({
-        totalTranscripts: 8,
-        recentTranscripts: 3,
-        sentimentBreakdown: [
-          { _id: 'positive', count: 4 },
-          { _id: 'neutral', count: 3 },
-          { _id: 'negative', count: 1 }
-        ],
-        topObjections: [
-          { _id: 'Budget constraints and ROI concerns', count: 5 },
-          { _id: 'Implementation timeline and complexity', count: 4 },
-          { _id: 'Integration with existing systems', count: 3 },
-          { _id: 'Team training requirements', count: 2 },
-          { _id: 'Security and compliance concerns', count: 2 }
-        ],
-        generatedAt: new Date().toISOString(),
-        mockData: true
-      });
-    }
-
     const userId = req.user.id;
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-    // Check if userId is a valid ObjectId - if not, return mock data for development
-    let userObjectId;
-    try {
-      if (mongoose.Types.ObjectId.isValid(userId)) {
-        userObjectId = new mongoose.Types.ObjectId(userId);
-      } else {
-        // Development user with non-ObjectId format - return mock analytics
-        console.log('⚠️  Development user detected: Returning mock analytics');
-        return res.json({
-          totalTranscripts: 5,
-          recentTranscripts: 2,
-          sentimentBreakdown: [
-            { _id: 'positive', count: 3 },
-            { _id: 'neutral', count: 2 },
-            { _id: 'negative', count: 0 }
-          ],
-          topObjections: [
-            { _id: 'Budget concerns', count: 3 },
-            { _id: 'Timeline questions', count: 2 },
-            { _id: 'Technical requirements', count: 1 }
-          ],
-          generatedAt: new Date().toISOString(),
-          mockData: true,
-          developmentMode: true
-        });
-      }
-    } catch (objectIdError) {
-      console.log('⚠️  Invalid ObjectId format: Returning mock analytics');
-      return res.json({
-        totalTranscripts: 3,
-        recentTranscripts: 1,
-        sentimentBreakdown: [
-          { _id: 'positive', count: 2 },
-          { _id: 'neutral', count: 1 },
-          { _id: 'negative', count: 0 }
-        ],
-        topObjections: [
-          { _id: 'Development testing', count: 2 },
-          { _id: 'Mock data generation', count: 1 }
-        ],
-        generatedAt: new Date().toISOString(),
-        mockData: true,
-        error: 'Invalid user ID format'
-      });
-    }
+    // Get analytics data from database
+    const userObjectId = new mongoose.Types.ObjectId(userId);
 
-    try {
-      const analytics = await Promise.all([
-        Transcript.countDocuments({ userId: userObjectId }),
-        Transcript.countDocuments({ userId: userObjectId, createdAt: { $gte: thirtyDaysAgo } }),
-        Transcript.aggregate([
-          { $match: { userId: userObjectId } },
-          { $group: { _id: '$analysis.sentiment', count: { $sum: 1 } } }
-        ]),
-        Transcript.aggregate([
-          { $match: { userId: userObjectId } },
-          { $unwind: '$analysis.objections' },
-          { $group: { _id: '$analysis.objections', count: { $sum: 1 } } },
-          { $sort: { count: -1 } },
-          { $limit: 5 }
-        ])
-      ]);
+    const [totalCount, recentCount, sentimentBreakdown, topObjections] = await Promise.all([
+      Transcript.countDocuments({ user: userObjectId }),
+      Transcript.countDocuments({ 
+        user: userObjectId, 
+        createdAt: { $gte: thirtyDaysAgo } 
+      }),
+      Transcript.aggregate([
+        { $match: { user: userObjectId } },
+        { $group: { _id: '$analysis.overallSentiment', count: { $sum: 1 } } },
+        { $sort: { count: -1 } }
+      ]),
+      Transcript.aggregate([
+        { $match: { user: userObjectId } },
+        { $unwind: '$analysis.keyObjections' },
+        { $group: { _id: '$analysis.keyObjections', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 5 }
+      ])
+    ]);
 
-      res.json({
-        totalTranscripts: analytics[0],
-        recentTranscripts: analytics[1],
-        sentimentBreakdown: analytics[2],
-        topObjections: analytics[3],
-        generatedAt: new Date().toISOString()
-      });
-    } catch (dbError) {
-      console.error('Database analytics error:', dbError);
-      // Fallback to mock data if database query fails
-      console.log('⚠️  Falling back to mock analytics due to database error');
-      return res.json({
-        totalTranscripts: 5,
-        recentTranscripts: 2,
-        sentimentBreakdown: [
-          { _id: 'positive', count: 3 },
-          { _id: 'neutral', count: 2 },
-          { _id: 'negative', count: 0 }
-        ],
-        topObjections: [
-          { _id: 'Budget concerns', count: 3 },
-          { _id: 'Timeline questions', count: 2 },
-          { _id: 'Technical requirements', count: 1 }
-        ],
-        generatedAt: new Date().toISOString(),
-        mockData: true,
-        fallback: true
-      });
-    }
-
+    res.json({
+      totalTranscripts: totalCount,
+      recentTranscripts: recentCount,
+      sentimentBreakdown,
+      topObjections,
+      generatedAt: new Date().toISOString()
+    });
   } catch (error) {
     console.error('Analytics error:', error);
     res.status(500).json({ error: 'Failed to generate analytics' });
@@ -2849,48 +2589,9 @@ app.get('/api/admin/users',
       
       console.log(`✅ Admin dashboard access granted for ${req.user.email}`);
       
-      // For now, anyone can access this for demo purposes
-      // In production, you'd check for admin role
-      
       const page = parseInt(req.query.page) || 1;
       const limit = parseInt(req.query.limit) || 20;
       const skip = (page - 1) * limit;
-      
-      if (mongoose.connection.readyState !== 1) {
-        // Return mock admin data for development
-        return res.json({
-          users: [
-            {
-              _id: 'mock-user-1',
-              email: 'demo@example.com',
-              firstName: 'Demo',
-              lastName: 'User',
-              subscription: { planId: 'free', status: 'inactive' },
-              createdAt: new Date(Date.now() - 86400000 * 7),
-              lastLogin: new Date(Date.now() - 86400000),
-              usage: { monthly: 3, daily: 1, total: 15 }
-            },
-            {
-              _id: 'mock-user-2', 
-              email: 'test@company.com',
-              firstName: 'Test',
-              lastName: 'Professional',
-              subscription: { planId: 'professional', status: 'active' },
-              createdAt: new Date(Date.now() - 86400000 * 30),
-              lastLogin: new Date(Date.now() - 3600000),
-              usage: { monthly: 45, daily: 5, total: 125 }
-            }
-          ],
-          totalUsers: 2,
-          pagination: { current: 1, pages: 1, total: 2 },
-          summary: {
-            totalUsers: 2,
-            activeSubscriptions: 1,
-            freeUsers: 1,
-            monthlyRevenue: 79
-          }
-        });
-      }
       
       // Get users with their usage stats
       const users = await User.find({})

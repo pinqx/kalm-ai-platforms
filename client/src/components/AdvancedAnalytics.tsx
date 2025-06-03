@@ -83,9 +83,7 @@ const AdvancedAnalytics: React.FC<AdvancedAnalyticsProps> = ({ user, token }) =>
       });
 
       if (!response.ok) {
-        // Generate mock data for demonstration
-        const mockData = generateMockAdvancedAnalytics();
-        setAnalytics(mockData);
+        setError('Failed to load advanced analytics');
         setLoading(false);
         return;
       }
@@ -93,101 +91,11 @@ const AdvancedAnalytics: React.FC<AdvancedAnalyticsProps> = ({ user, token }) =>
       const data = await response.json();
       setAnalytics(data);
     } catch (error: any) {
-      // Generate mock data on error for demo purposes
-      const mockData = generateMockAdvancedAnalytics();
-      setAnalytics(mockData);
-      setError('');
+      console.error('Error fetching advanced analytics:', error);
+      setError('Failed to load analytics data. Please try again later.');
     } finally {
       setLoading(false);
     }
-  };
-
-  const generateMockAdvancedAnalytics = (): AdvancedAnalyticsData => {
-    const now = new Date();
-    const pastDays = Array.from({ length: 30 }, (_, i) => {
-      const date = new Date(now);
-      date.setDate(date.getDate() - i);
-      return date.toISOString().split('T')[0];
-    }).reverse();
-
-    return {
-      totalTranscripts: 147,
-      recentTranscripts: 23,
-      sentimentBreakdown: [
-        { _id: 'positive', count: 89 },
-        { _id: 'neutral', count: 42 },
-        { _id: 'negative', count: 16 }
-      ],
-      topObjections: [
-        { _id: 'Budget constraints', count: 34 },
-        { _id: 'Implementation timeline', count: 28 },
-        { _id: 'Integration complexity', count: 22 },
-        { _id: 'Team training', count: 18 },
-        { _id: 'ROI concerns', count: 15 }
-      ],
-      conversionTrends: pastDays.slice(-7).map((date, i) => ({
-        date,
-        rate: Number((65 + Math.sin(i) * 10 + Math.random() * 5).toFixed(1)),
-        transcripts: 8 + Math.floor(Math.random() * 6)
-      })),
-      performanceMetrics: {
-        avgCallDuration: 18.5,
-        successRate: 73.2,
-        followUpRate: 89.1,
-        responseTime: 2.3
-      },
-      sentimentTrends: pastDays.slice(-7).map((date, i) => ({
-        date,
-        positive: 60 + Math.random() * 15,
-        negative: 15 + Math.random() * 10,
-        neutral: 25 + Math.random() * 10
-      })),
-      topKeywords: [
-        { word: 'ROI', frequency: 89, sentiment: 'neutral' },
-        { word: 'budget', frequency: 76, sentiment: 'negative' },
-        { word: 'efficiency', frequency: 65, sentiment: 'positive' },
-        { word: 'integration', frequency: 58, sentiment: 'neutral' },
-        { word: 'training', frequency: 47, sentiment: 'positive' }
-      ],
-      weeklyProgress: [
-        { week: 'Week 1', calls: 32, deals: 8, revenue: 12400 },
-        { week: 'Week 2', calls: 28, deals: 12, revenue: 18600 },
-        { week: 'Week 3', calls: 35, deals: 10, revenue: 15800 },
-        { week: 'Week 4', calls: 42, deals: 15, revenue: 23200 }
-      ],
-      predictiveInsights: {
-        nextWeekPrediction: 78.5,
-        trendDirection: 'up',
-        confidence: 87,
-        recommendations: [
-          'Focus on budget objection handling - 34% of conversations mention budget concerns',
-          'Schedule follow-ups within 24 hours for 15% conversion boost',
-          'Best performance hours are 10-11 AM and 2-3 PM',
-          'Positive sentiment increases 23% when efficiency is mentioned early'
-        ]
-      },
-      competitorMentions: [
-        { name: 'Competitor A', mentions: 23, sentiment: 'negative' },
-        { name: 'Competitor B', mentions: 18, sentiment: 'neutral' },
-        { name: 'Competitor C', mentions: 12, sentiment: 'positive' }
-      ],
-      timeAnalysis: {
-        bestPerformingHours: [
-          { hour: 10, successRate: 85.2 },
-          { hour: 14, successRate: 78.9 },
-          { hour: 11, successRate: 76.3 },
-          { hour: 15, successRate: 73.1 }
-        ],
-        avgCallsByDay: [
-          { day: 'Monday', calls: 8.2 },
-          { day: 'Tuesday', calls: 9.5 },
-          { day: 'Wednesday', calls: 7.8 },
-          { day: 'Thursday', calls: 8.9 },
-          { day: 'Friday', calls: 6.3 }
-        ]
-      },
-      generatedAt: new Date().toISOString()
-    };
   };
 
   const exportData = () => {
