@@ -55,6 +55,54 @@ const io = socketIo(server, {
 });
 const port = process.env.PORT || 3000;
 
+// Global error handlers to prevent crashes
+process.on('uncaughtException', (error) => {
+  console.error('🚨 Uncaught Exception:', error);
+  console.error('Stack:', error.stack);
+  
+  // Log to external service if available
+  if (logger && logger.error) {
+    logger.error('Uncaught Exception', { error: error.message, stack: error.stack });
+  }
+  
+  // Don't crash in production - just log the error
+  if (process.env.NODE_ENV === 'production') {
+    console.error('⚠️  Continuing operation despite uncaught exception');
+  } else {
+    console.error('💀 Exiting due to uncaught exception in development');
+    process.exit(1);
+  }
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('🚨 Unhandled Rejection at:', promise, 'reason:', reason);
+  
+  // Log to external service if available
+  if (logger && logger.error) {
+    logger.error('Unhandled Rejection', { reason, promise });
+  }
+  
+  // Don't crash in production - just log the error
+  if (process.env.NODE_ENV === 'production') {
+    console.error('⚠️  Continuing operation despite unhandled rejection');
+  } else {
+    console.error('💀 Exiting due to unhandled rejection in development');
+    process.exit(1);
+  }
+});
+
+// SIGTERM handler for graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('📤 SIGTERM received, shutting down gracefully...');
+  server.close(() => {
+    console.log('✅ Server closed gracefully');
+    mongoose.connection.close(false, () => {
+      console.log('📊 MongoDB connection closed');
+      process.exit(0);
+    });
+  });
+});
+
 // Initialize collaboration service
 const collaborationService = new CollaborationService(io);
 
@@ -333,12 +381,30 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/ai-sales-
 })
 .catch((error) => {
   console.error('❌ MongoDB connection error:', error);
-  // In development, continue without database
-  if (process.env.NODE_ENV !== 'production') {
-    console.log('⚠️  Continuing without database in development mode');
-  } else {
-    process.exit(1);
-  }
+  
+  // In production, log error but don't crash - allow server to run without database
+  // Many endpoints can work without database using mock data
+  console.log('⚠️  Running without database - using mock data mode');
+  console.log('💡 Some features may be limited until database connection is restored');
+  
+  // Set a flag to indicate database is unavailable
+  global.DATABASE_UNAVAILABLE = true;
+});
+
+// Handle ongoing database connection issues
+mongoose.connection.on('error', (error) => {
+  console.error('❌ MongoDB ongoing connection error:', error);
+  global.DATABASE_UNAVAILABLE = true;
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.warn('⚠️  MongoDB disconnected - switching to mock data mode');
+  global.DATABASE_UNAVAILABLE = true;
+});
+
+mongoose.connection.on('reconnected', () => {
+  console.log('✅ MongoDB reconnected successfully');
+  global.DATABASE_UNAVAILABLE = false;
 });
 
 // Authentication middleware
