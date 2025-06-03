@@ -1,77 +1,175 @@
 const os = require('os');
+const process = require('process');
+
+// System metrics tracking
+let requestCount = 0;
+let errorCount = 0;
+let totalResponseTime = 0;
+const startTime = Date.now();
 
 // Performance monitoring middleware
 const performanceMonitor = (req, res, next) => {
   const start = Date.now();
   
-  res.on('finish', () => {
-    const duration = Date.now() - start;
-    const memUsage = process.memoryUsage();
+  // Track request
+  requestCount++;
+  
+  // Override res.end to capture response time
+  const originalEnd = res.end;
+  res.end = function(...args) {
+    const responseTime = Date.now() - start;
+    totalResponseTime += responseTime;
     
-    console.log(`📊 ${req.method} ${req.originalUrl} - ${res.statusCode} - ${duration}ms - Memory: ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB`);
-    
-    // Log slow requests
-    if (duration > 2000) {
-      console.warn(`⚠️  Slow request detected: ${req.method} ${req.originalUrl} took ${duration}ms`);
+    // Log slow requests (>1000ms)
+    if (responseTime > 1000) {
+      console.warn(`⚠️  Slow request: ${req.method} ${req.path} - ${responseTime}ms`);
     }
-  });
+    
+    // Track errors
+    if (res.statusCode >= 400) {
+      errorCount++;
+    }
+    
+    originalEnd.apply(this, args);
+  };
   
   next();
 };
 
-// System health monitoring
+// Request logger middleware
+const requestLogger = (req, res, next) => {
+  const timestamp = new Date().toISOString();
+  const method = req.method;
+  const url = req.url;
+  const userAgent = req.get('User-Agent') || 'Unknown';
+  const ip = req.ip || req.connection.remoteAddress;
+  
+  console.log(`📝 ${timestamp} | ${method} ${url} | IP: ${ip} | UA: ${userAgent.substring(0, 50)}`);
+  
+  next();
+};
+
+// System health check endpoint data
 const getSystemHealth = () => {
-  const memUsage = process.memoryUsage();
-  const cpuUsage = process.cpuUsage();
+  const uptime = Date.now() - startTime;
+  const avgResponseTime = requestCount > 0 ? Math.round(totalResponseTime / requestCount) : 0;
+  const errorRate = requestCount > 0 ? ((errorCount / requestCount) * 100).toFixed(2) : 0;
   
   return {
+    status: 'healthy',
     timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    memory: {
-      used: Math.round(memUsage.heapUsed / 1024 / 1024), // MB
-      total: Math.round(memUsage.heapTotal / 1024 / 1024), // MB
-      external: Math.round(memUsage.external / 1024 / 1024), // MB
-      rss: Math.round(memUsage.rss / 1024 / 1024) // MB
-    },
-    cpu: {
-      user: cpuUsage.user,
-      system: cpuUsage.system
+    uptime: {
+      ms: uptime,
+      human: formatUptime(uptime)
     },
     system: {
+      nodeVersion: process.version,
       platform: os.platform(),
       arch: os.arch(),
-      loadavg: os.loadavg(),
-      freemem: Math.round(os.freemem() / 1024 / 1024), // MB
-      totalmem: Math.round(os.totalmem() / 1024 / 1024) // MB
+      hostname: os.hostname(),
+      loadAverage: os.loadavg(),
+      totalMemory: formatBytes(os.totalmem()),
+      freeMemory: formatBytes(os.freemem()),
+      memoryUsage: process.memoryUsage(),
+      cpuCount: os.cpus().length
+    },
+    application: {
+      environment: process.env.NODE_ENV || 'development',
+      version: require('../package.json').version || '1.0.0',
+      requests: {
+        total: requestCount,
+        errors: errorCount,
+        errorRate: `${errorRate}%`,
+        avgResponseTime: `${avgResponseTime}ms`
+      }
+    },
+    services: {
+      database: checkDatabaseHealth(),
+      openai: checkOpenAIHealth(),
+      stripe: checkStripeHealth()
     }
   };
 };
 
-// Request logging middleware
-const requestLogger = (req, res, next) => {
-  const userAgent = req.get('User-Agent') || 'Unknown';
-  const clientIP = req.ip || req.connection.remoteAddress;
-  
-  console.log(`🌐 ${new Date().toISOString()} | ${req.method} ${req.originalUrl} | IP: ${clientIP} | UA: ${userAgent.substring(0, 50)}...`);
-  
-  next();
+// Service health checks
+const checkDatabaseHealth = () => {
+  try {
+    const mongoose = require('mongoose');
+    const state = mongoose.connection.readyState;
+    
+    const states = {
+      0: 'disconnected',
+      1: 'connected',
+      2: 'connecting',
+      3: 'disconnecting'
+    };
+    
+    return {
+      status: state === 1 ? 'healthy' : 'unhealthy',
+      state: states[state] || 'unknown',
+      host: mongoose.connection.host || 'not configured'
+    };
+  } catch (error) {
+    return {
+      status: 'unhealthy',
+      error: error.message
+    };
+  }
 };
 
-// Rate limiting info
-const rateLimitLogger = (req, res, next) => {
-  if (req.rateLimit) {
-    res.set({
-      'X-RateLimit-Limit': req.rateLimit.limit,
-      'X-RateLimit-Remaining': req.rateLimit.remaining,
-      'X-RateLimit-Reset': new Date(Date.now() + req.rateLimit.resetTime)
-    });
-  }
-  next();
+const checkOpenAIHealth = () => {
+  const hasApiKey = process.env.OPENAI_API_KEY && 
+                    process.env.OPENAI_API_KEY !== 'your_openai_api_key_here' &&
+                    process.env.OPENAI_API_KEY !== 'sk-your-openai-api-key-here';
+  
+  return {
+    status: hasApiKey ? 'configured' : 'not configured',
+    mode: process.env.USE_OPENAI !== 'false' && hasApiKey ? 'live' : 'mock'
+  };
+};
+
+const checkStripeHealth = () => {
+  const hasSecretKey = process.env.STRIPE_SECRET_KEY && 
+                       process.env.STRIPE_SECRET_KEY !== 'sk_test_your-stripe-secret-key';
+  
+  return {
+    status: hasSecretKey ? 'configured' : 'not configured',
+    mode: process.env.NODE_ENV === 'production' ? 'live' : 'test'
+  };
+};
+
+// Utility functions
+const formatUptime = (ms) => {
+  const seconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  
+  if (days > 0) return `${days}d ${hours % 24}h ${minutes % 60}m`;
+  if (hours > 0) return `${hours}h ${minutes % 60}m ${seconds % 60}s`;
+  if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
+  return `${seconds}s`;
+};
+
+const formatBytes = (bytes) => {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+};
+
+// Reset metrics (useful for testing)
+const resetMetrics = () => {
+  requestCount = 0;
+  errorCount = 0;
+  totalResponseTime = 0;
+  console.log('📊 Metrics reset');
 };
 
 module.exports = {
   performanceMonitor,
-  getSystemHealth,
   requestLogger,
-  rateLimitLogger
+  getSystemHealth,
+  resetMetrics
 }; 
