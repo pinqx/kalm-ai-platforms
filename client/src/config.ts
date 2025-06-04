@@ -2,11 +2,10 @@
 const isDevelopment = import.meta.env.MODE === 'development';
 
 export const API_CONFIG = {
-  // In production (kalm.live), use relative URLs that will be proxied to Railway
-  // In development, connect directly to Railway for testing
-  BASE_URL: isDevelopment ? 'https://web-production-e7159.up.railway.app' : '', 
+  // Temporarily use direct Railway backend until Vercel proxy is fixed
+  BASE_URL: 'https://web-production-e7159.up.railway.app',
   
-  WS_URL: isDevelopment ? 'wss://web-production-e7159.up.railway.app' : `wss://${window.location.host}`
+  WS_URL: 'wss://web-production-e7159.up.railway.app'
 };
 
 // Helper function to get API URL
