@@ -2079,7 +2079,7 @@ app.post('/api/payment/create-intent',
             email: req.user.email,
             name: billingDetails?.name || req.user.name,
             metadata: {
-              userId: req.user._id.toString(),
+              userId: req.user.id.toString(),
               planId: planId
             }
           });
@@ -2095,13 +2095,13 @@ app.post('/api/payment/create-intent',
         console.error('User data being sent to Stripe:', {
           email: req.user.email,
           name: req.user.name,
-          userId: req.user._id,
+          userId: req.user.id,
           hasEmail: !!req.user.email,
           hasName: !!req.user.name,
-          hasUserId: !!req.user._id
+          hasUserId: !!req.user.id
         });
         
-        logError('Stripe customer creation error', stripeError, { userId: req.user._id });
+        logError('Stripe customer creation error', stripeError, { userId: req.user.id });
         return res.status(500).json({
           error: 'Failed to create customer',
           code: 'CUSTOMER_CREATION_FAILED',
@@ -2115,7 +2115,7 @@ app.post('/api/payment/create-intent',
         currency: currency,
         customer: customer.id,
         metadata: {
-          userId: req.user._id.toString(),
+          userId: req.user.id.toString(),
           planId: planId,
           userEmail: req.user.email
         },
@@ -2127,7 +2127,7 @@ app.post('/api/payment/create-intent',
       // Log payment intent creation
       logger.info('Payment intent created', {
         paymentIntentId: paymentIntent.id,
-        userId: req.user._id,
+        userId: req.user.id,
         amount: amount,
         planId: planId
       });
@@ -2140,7 +2140,7 @@ app.post('/api/payment/create-intent',
 
     } catch (error) {
       logError('Payment intent creation error', error, { 
-        userId: req.user._id, 
+        userId: req.user.id, 
         amount: amount, 
         planId: planId 
       });
@@ -2177,7 +2177,7 @@ app.post('/api/payment/confirm',
       }
 
       // Update user subscription in database
-      await User.findByIdAndUpdate(req.user._id, {
+      await User.findByIdAndUpdate(req.user.id, {
         subscription: {
           planId: planId,
           status: 'active',
@@ -2199,7 +2199,7 @@ app.post('/api/payment/confirm',
       });
 
       // Get user details for email
-      const user = await User.findById(req.user._id);
+      const user = await User.findById(req.user.id);
       const nextBillingDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
       // Send payment confirmation email
@@ -2213,13 +2213,13 @@ app.post('/api/payment/confirm',
 
       if (emailResult.success) {
         logger.info('Payment confirmation email sent successfully', {
-          userId: req.user._id,
+          userId: req.user.id,
           userEmail: user.email,
           messageId: emailResult.messageId
         });
       } else {
         logger.warn('Failed to send payment confirmation email', {
-          userId: req.user._id,
+          userId: req.user.id,
           userEmail: user.email,
           error: emailResult.error
         });
@@ -2227,7 +2227,7 @@ app.post('/api/payment/confirm',
 
       // Log successful payment
       logger.info('Payment confirmed and subscription created', {
-        userId: req.user._id,
+        userId: req.user.id,
         paymentIntentId: paymentIntentId,
         planId: planId,
         amount: paymentIntent.amount / 100,
@@ -2245,7 +2245,7 @@ app.post('/api/payment/confirm',
 
     } catch (error) {
       logError('Payment confirmation error', error, { 
-        userId: req.user._id, 
+        userId: req.user.id, 
         paymentIntentId: paymentIntentId 
       });
       
@@ -2263,7 +2263,7 @@ app.get('/api/payment/subscription',
   authenticateToken,
   asyncHandler(async (req, res) => {
     try {
-      const user = await User.findById(req.user._id).select('subscription paymentHistory');
+      const user = await User.findById(req.user.id).select('subscription paymentHistory');
       
       if (!user.subscription) {
         return res.json({
@@ -2278,7 +2278,8 @@ app.get('/api/payment/subscription',
       });
 
     } catch (error) {
-      logError('Subscription retrieval error', error, { userId: req.user._id });
+      logError('Subscription retrieval error', error, { userId: req.user.id });
+      
       res.status(500).json({
         error: 'Failed to retrieve subscription',
         code: 'SUBSCRIPTION_RETRIEVAL_FAILED'
@@ -2288,20 +2289,19 @@ app.get('/api/payment/subscription',
 );
 
 // Cancel subscription
-app.post('/api/payment/cancel',
-  authLimiter,
+app.post('/api/payment/cancel-subscription',
+  paymentLimiter,
   authenticateToken,
   asyncHandler(async (req, res) => {
     try {
-      // Update user subscription status
-      await User.findByIdAndUpdate(req.user._id, {
+      // Update user subscription status to cancelled
+      await User.findByIdAndUpdate(req.user.id, {
         'subscription.status': 'cancelled',
         'subscription.cancelledAt': new Date()
       });
 
-      // Log cancellation
       logger.info('Subscription cancelled', {
-        userId: req.user._id
+        userId: req.user.id
       });
 
       res.json({
@@ -2310,10 +2310,11 @@ app.post('/api/payment/cancel',
       });
 
     } catch (error) {
-      logError('Subscription cancellation error', error, { userId: req.user._id });
+      logError('Subscription cancellation error', error, { userId: req.user.id });
+      
       res.status(500).json({
         error: 'Failed to cancel subscription',
-        code: 'CANCELLATION_FAILED'
+        code: 'SUBSCRIPTION_CANCELLATION_FAILED'
       });
     }
   })
