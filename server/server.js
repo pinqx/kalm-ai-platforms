@@ -2841,4 +2841,4 @@ function generateUpgradeSuggestions(currentPlan, usageStats) {
 app.use(notFound); // 404 handler for unmatched routes
 app.use(errorHandler); // Global error handler
 
-module.exports = { app, server, io };
+module.exports = { app, server, io };// Railway redeploy trigger - Wed Jun  4 18:54:51 BST 2025
