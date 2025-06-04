@@ -2453,6 +2453,11 @@ server.listen(port, '0.0.0.0', () => {
 // USAGE TRACKING ENDPOINTS
 // ================================
 
+// Simple test endpoint to verify routing works
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'API routing is working!', timestamp: new Date().toISOString() });
+});
+
 // Get current user's usage statistics
 app.get('/api/usage/stats', 
   authenticateToken,
