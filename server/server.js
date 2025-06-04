@@ -713,6 +713,101 @@ app.get('/api/auth/profile', authenticateToken, async (req, res) => {
   }
 });
 
+// ================================
+// USAGE TRACKING ENDPOINTS (moved here for early registration)
+// ================================
+
+// Get current user's usage statistics
+app.get('/api/usage/stats', 
+  authenticateToken,
+  asyncHandler(async (req, res) => {
+    try {
+      const userId = req.user.id || req.user._id;
+      
+      // Admin emails get enterprise-level access
+      const adminEmails = [
+        'alexfisher@mac.home', 
+        'alexfisher.dev@gmail.com',
+        'alex@kalm.live',
+        'admin@kalm.live'
+      ].map(email => email.toLowerCase());
+      
+      const userEmail = req.user?.email?.toLowerCase();
+      
+      if (req.user.email && adminEmails.includes(userEmail)) {
+        console.log(`✅ Admin usage stats access for ${req.user.email}`);
+        
+        return res.json({
+          currentPlan: 'enterprise',
+          limits: { monthlyTranscripts: 0, dailyTranscripts: 0, features: {} },
+          usage: {
+            monthly: { used: 0, limit: 0, remaining: 'unlimited', percentage: 0 },
+            daily: { used: 0, limit: 0, remaining: 'unlimited', percentage: 0 },
+            total: 0
+          },
+          features: {},
+          upgradeSuggestions: []
+        });
+      }
+      
+      // For now, return basic free plan data
+      return res.json({
+        currentPlan: 'free',
+        limits: { monthlyTranscripts: 5, dailyTranscripts: 5, features: {} },
+        usage: {
+          monthly: { used: 0, limit: 5, remaining: 5, percentage: 0 },
+          daily: { used: 0, limit: 5, remaining: 5, percentage: 0 },
+          total: 0
+        },
+        features: {},
+        upgradeSuggestions: []
+      });
+      
+    } catch (error) {
+      console.error('Usage stats error:', error);
+      res.status(500).json({ error: 'Failed to get usage statistics' });
+    }
+  })
+);
+
+// Admin endpoint - Get all users
+app.get('/api/admin/users', 
+  authenticateToken,
+  asyncHandler(async (req, res) => {
+    try {
+      const adminEmails = [
+        'alexfisher@mac.home', 
+        'alexfisher.dev@gmail.com',
+        'alex@kalm.live',
+        'admin@kalm.live'
+      ].map(email => email.toLowerCase());
+      
+      const userEmail = req.user?.email?.toLowerCase();
+      
+      if (!userEmail || !adminEmails.includes(userEmail)) {
+        return res.status(403).json({ 
+          error: 'Access denied. Admin privileges required.',
+          code: 'ADMIN_ACCESS_DENIED'
+        });
+      }
+      
+      console.log(`✅ Admin dashboard access granted for ${req.user.email}`);
+      
+      // Return mock admin data for now
+      return res.json({
+        users: [],
+        totalUsers: 0,
+        pagination: { current: 1, pages: 1, total: 0 },
+        summary: { totalUsers: 0, activeSubscriptions: 0, freeUsers: 0, monthlyRevenue: 0 }
+      });
+      
+    } catch (error) {
+      console.error('Admin users error:', error);
+      res.status(500).json({ error: 'Failed to get users data' });
+    }
+  })
+);
+
 // Transcript analysis endpoint
 app.post('/api/analyze-transcript', authenticateToken, async (req, res) => {
   try {
