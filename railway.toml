@@ -4,7 +4,7 @@ buildCommand = "cd server && npm ci"
 watchPatterns = ["server/**"]
 
 [deploy]
-startCommand = "node start.js"
+startCommand = "node ../start.js"
 healthcheckPath = "/health"
 healthcheckTimeout = 60
 healthcheckInterval = 30
