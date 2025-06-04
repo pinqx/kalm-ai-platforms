@@ -2693,4 +2693,8 @@ function generateUpgradeSuggestions(currentPlan, usageStats) {
   return suggestions;
 }
 
+// IMPORTANT: Error handling middleware must be LAST, after all routes
+app.use(notFound); // 404 handler for unmatched routes
+app.use(errorHandler); // Global error handler
+
 module.exports = { app, server, io };
