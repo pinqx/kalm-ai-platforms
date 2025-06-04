@@ -652,7 +652,34 @@ app.post('/api/auth/register', [
     });
   } catch (error) {
     console.error('Registration error:', error);
-    res.status(500).json({ error: 'Registration failed' });
+    console.error('Error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+      code: error.code
+    });
+    
+    // Provide more specific error messages
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ 
+        error: 'Validation failed', 
+        details: error.message 
+      });
+    } else if (error.code === 11000) {
+      return res.status(400).json({ 
+        error: 'User with this email already exists' 
+      });
+    } else if (error.name === 'MongoNetworkError') {
+      console.error('Database connection issue during registration');
+      return res.status(500).json({ 
+        error: 'Database connection issue, please try again' 
+      });
+    }
+    
+    res.status(500).json({ 
+      error: 'Registration failed',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 
@@ -2058,10 +2085,27 @@ app.post('/api/payment/create-intent',
           });
         }
       } catch (stripeError) {
+        console.error('Stripe customer creation error:', stripeError);
+        console.error('Stripe error details:', {
+          type: stripeError.type,
+          code: stripeError.code,
+          message: stripeError.message,
+          statusCode: stripeError.statusCode
+        });
+        console.error('User data being sent to Stripe:', {
+          email: req.user.email,
+          name: req.user.name,
+          userId: req.user._id,
+          hasEmail: !!req.user.email,
+          hasName: !!req.user.name,
+          hasUserId: !!req.user._id
+        });
+        
         logError('Stripe customer creation error', stripeError, { userId: req.user._id });
         return res.status(500).json({
           error: 'Failed to create customer',
-          code: 'CUSTOMER_CREATION_FAILED'
+          code: 'CUSTOMER_CREATION_FAILED',
+          details: process.env.NODE_ENV === 'development' ? stripeError.message : undefined
         });
       }
 
