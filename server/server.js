@@ -2843,3 +2843,4 @@ app.use(errorHandler); // Global error handler
 
 module.exports = { app, server, io };// Railway redeploy trigger - Wed Jun  4 18:54:51 BST 2025
 // Force Railway redeploy to pick up live Stripe keys - Wed Jun  4 19:32:21 BST 2025
+// Force Railway redeploy for Stripe live keys - 1749062213
