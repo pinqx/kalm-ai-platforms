@@ -6,7 +6,7 @@
   "framework": "vite",
   "env": {
     "VITE_API_URL": "https://web-production-e7159.up.railway.app",
-    "VITE_STRIPE_PUBLISHABLE_KEY": "pk_live_your_publishable_key_here"
+    "VITE_STRIPE_PUBLISHABLE_KEY": "pk_live_51RVdJxLGx8NMzJ2AxXmrhhSYBBRY9OKvYYidRc5Kmimge0G7KSUOGfQO3hLdLjlKPIJlfnkOaDDIWBFB1VX31CxL00JqVsPo6m"
   },
   "rewrites": [
     {

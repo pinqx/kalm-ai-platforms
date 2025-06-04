@@ -80,6 +80,9 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, planId, onSuccess, on
         userMessage = 'Too many payment attempts. Please wait a few minutes and try again.';
       } else if (error.message.includes('fetch')) {
         userMessage = 'Unable to connect to payment system. Please check your internet connection.';
+      } else {
+        // Show the actual error message instead of generic "development mode" text
+        userMessage = error.message || 'Payment setup failed. Please try again or contact support.';
       }
       
       setError(userMessage);
@@ -187,10 +190,17 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, planId, onSuccess, on
               <p>• Please wait 5-10 minutes before trying again</p>
               <p>• The payment system has rate limiting for security</p>
             </div>
+          ) : error.includes('Payment setup failed') || error.includes('Failed to create') ? (
+            <div className="text-red-600 text-xs">
+              <p>• Check that you're signed in to your account</p>
+              <p>• Try refreshing the page and attempting payment again</p>
+              <p>• If the issue persists, please contact support</p>
+            </div>
           ) : (
             <div className="text-red-600 text-xs">
-              <p>The payment system is currently in development mode.</p>
-              <p>Please contact support to set up your subscription manually.</p>
+              <p>• Please try refreshing the page</p>
+              <p>• Make sure you're signed in to your account</p>
+              <p>• Contact support if the problem continues</p>
             </div>
           )}
         </div>
