@@ -116,7 +116,7 @@ const UsageDashboard: React.FC<UsageDashboardProps> = ({ onUpgrade }) => {
 
     try {
       setLoading(true);
-      const response = await fetch(`${getApiUrl()}/api/usage-stats`, {
+      const response = await fetch(`${getApiUrl()}/api/usage/stats`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
