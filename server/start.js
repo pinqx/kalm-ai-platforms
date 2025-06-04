@@ -10,15 +10,8 @@ console.log(`📂 Current directory: ${__dirname}`);
 console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 console.log(`🔌 Port: ${process.env.PORT || 3000}`);
 
-// Check if server directory exists
-const serverDir = path.join(__dirname, 'server');
-if (!fs.existsSync(serverDir)) {
-  console.error('❌ Server directory not found:', serverDir);
-  process.exit(1);
-}
-
-// Check if server.js exists
-const serverFile = path.join(serverDir, 'server.js');
+// Since we're already in the server directory, just check if server.js exists
+const serverFile = path.join(__dirname, 'server.js');
 if (!fs.existsSync(serverFile)) {
   console.error('❌ Server file not found:', serverFile);
   process.exit(1);
@@ -26,9 +19,8 @@ if (!fs.existsSync(serverFile)) {
 
 console.log('✅ Server files found, starting application...');
 
-// Set working directory to server
-process.chdir(serverDir);
-console.log(`📁 Changed to directory: ${process.cwd()}`);
+// We're already in the server directory
+console.log(`📁 Working directory: ${process.cwd()}`);
 
 // Quick startup delay for file system readiness
 console.log('⏳ Initializing server environment...');
