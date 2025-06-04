@@ -21,7 +21,7 @@ const CollaborationTab: React.FC<CollaborationTabProps> = ({ currentUser }) => {
   // Debug logging
   React.useEffect(() => {
     console.log('🚀 CollaborationTab mounted with user:', currentUser);
-    console.log('🌐 Expected server at: http://localhost:3007');
+    console.log('🌐 Expected server at: https://web-production-e7159.up.railway.app');
   }, [currentUser]);
 
   // Transform currentUser to match expected User interface
@@ -117,7 +117,7 @@ const CollaborationTab: React.FC<CollaborationTabProps> = ({ currentUser }) => {
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
               <span className="text-sm text-blue-800">
-                Real-time collaboration active - Server: localhost:3007
+                Real-time collaboration active - Server: web-production-e7159.up.railway.app
               </span>
             </div>
             <div className="text-xs text-blue-600">

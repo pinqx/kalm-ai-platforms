@@ -50,7 +50,7 @@ const TeamChat: React.FC<TeamChatProps> = ({
   useEffect(() => {
     console.log('🚀 TeamChat: Initializing with user:', currentUser);
     
-    const newSocket = io('http://localhost:3007', {
+    const newSocket = io('https://web-production-e7159.up.railway.app', {
       withCredentials: true,
       timeout: 10000,
       reconnection: true,

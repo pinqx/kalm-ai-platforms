@@ -27,7 +27,7 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
     setMessage('');
     
     try {
-      const response = await fetch('http://localhost:3007/api/email-signup', {
+      const response = await fetch('https://web-production-e7159.up.railway.app/api/email-signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

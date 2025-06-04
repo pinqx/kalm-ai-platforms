@@ -38,7 +38,7 @@ const UserPresence: React.FC<UserPresenceProps> = ({
     console.log('🚀 UserPresence: Initializing with user:', currentUser);
     
     // Initialize socket connection with error handling and retries
-    const newSocket = io('http://localhost:3007', {
+    const newSocket = io('https://web-production-e7159.up.railway.app', {
       withCredentials: true,
       timeout: 10000,
       reconnection: true,
@@ -280,7 +280,7 @@ const UserPresence: React.FC<UserPresenceProps> = ({
             <div>Connected: {isConnected ? '✅' : '❌'}</div>
             <div>Socket ID: {socket?.id || 'None'}</div>
             <div>Users: {activeUsers.length}</div>
-            <div>Server: http://localhost:3007</div>
+            <div>Server: https://web-production-e7159.up.railway.app</div>
           </div>
         </div>
       )}
