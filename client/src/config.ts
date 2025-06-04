@@ -2,8 +2,8 @@
 const isDevelopment = import.meta.env.MODE === 'development';
 
 export const API_CONFIG = {
-  // Use Vercel proxy function for API calls in production
-  BASE_URL: isDevelopment ? 'https://web-production-e7159.up.railway.app' : '/api',
+  // Direct Railway backend - immediate fix for admin dashboard
+  BASE_URL: 'https://web-production-e7159.up.railway.app',
   
   WS_URL: 'wss://web-production-e7159.up.railway.app'
 };
