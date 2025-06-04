@@ -5,7 +5,8 @@
   "devCommand": "cd client && npm run dev",
   "framework": "vite",
   "env": {
-    "VITE_API_URL": "https://web-production-e7159.up.railway.app"
+    "VITE_API_URL": "https://web-production-e7159.up.railway.app",
+    "VITE_STRIPE_PUBLISHABLE_KEY": "pk_live_your_publishable_key_here"
   },
   "rewrites": [
     {

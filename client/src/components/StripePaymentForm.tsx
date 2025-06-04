@@ -10,7 +10,7 @@ import { CheckCircleIcon, ExclamationTriangleIcon, CreditCardIcon } from '@heroi
 import { getApiUrl } from '../config';
 
 // Initialize Stripe
-const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY || 'pk_test_...');
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_BQokikJOvBiI2HlWgH4olfQ2');
 
 interface PaymentFormProps {
   amount: number;
