@@ -2,7 +2,7 @@
 const isDevelopment = import.meta.env.MODE === 'development';
 
 export const API_CONFIG = {
-  // Direct Railway backend - immediate fix for admin dashboard
+  // Direct Railway backend - for live debugging
   BASE_URL: 'https://web-production-e7159.up.railway.app',
   
   WS_URL: 'wss://web-production-e7159.up.railway.app'

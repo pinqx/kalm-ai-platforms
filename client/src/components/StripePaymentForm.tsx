@@ -38,6 +38,14 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, planId, onSuccess, on
       setError('');
       
       const token = localStorage.getItem('token');
+      console.log('🔍 Payment Debug:', {
+        hasToken: !!token,
+        tokenLength: token?.length,
+        amount,
+        planId,
+        apiUrl: getApiUrl()
+      });
+      
       if (!token) {
         throw new Error('Please sign in to continue with payment');
       }
@@ -55,7 +63,14 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, planId, onSuccess, on
         })
       });
 
+      console.log('🔍 API Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok
+      });
+
       const data = await response.json();
+      console.log('🔍 Response Data:', data);
 
       if (!response.ok) {
         if (response.status === 401) {
@@ -71,6 +86,11 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, planId, onSuccess, on
       setIsReady(true);
     } catch (error: any) {
       console.error('Payment intent creation failed:', error);
+      console.error('Full error details:', {
+        message: error.message,
+        name: error.name,
+        stack: error.stack
+      });
       
       // Provide user-friendly error messages
       let userMessage = error.message;
@@ -80,6 +100,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, planId, onSuccess, on
         userMessage = 'Too many payment attempts. Please wait a few minutes and try again.';
       } else if (error.message.includes('fetch')) {
         userMessage = 'Unable to connect to payment system. Please check your internet connection.';
+      } else if (error.message.includes('Failed to create customer')) {
+        userMessage = 'There was an issue setting up your payment profile. Please try again or contact support.';
       } else {
         // Show the actual error message instead of generic "development mode" text
         userMessage = error.message || 'Payment setup failed. Please try again or contact support.';
