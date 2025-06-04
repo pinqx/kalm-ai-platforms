@@ -14,9 +14,9 @@ numReplicas = 1
 [env]
 NODE_ENV = "production"
 PORT = 3000
-MONGODB_URI = "mongodb+srv://ai-sales-user:Fis84er1@ai-sales-platfrom.dhcgfhf.mongodb.net/ai-sales-platform?retryWrites=true&w=majority&appName=ai-sales-platfrom"
+MONGODB_URI = "mongodb+srv://ai-sales-user:Fis84er1@ai-sales-platfrom.dhcgfhf.mongodb.net/kalm-ai?retryWrites=true&w=majority&appName=ai-sales-platfrom"
 JWT_SECRET = "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456789012345678901234567890abcdef12345678901234567890abcdef12"
-USE_OPENAI = "false"
+USE_OPENAI = "true"
 OPENAI_API_KEY = "sk-your-openai-api-key-here"
 UPLOAD_DIR = "uploads/"
 MAX_FILE_SIZE = "25000000"
