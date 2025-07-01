@@ -80,4 +80,8 @@ Thumbs.db
 
 # Production deployment files
 /deploy/
-/production/ 
+/production/ railway-env-vars.txt
+production-deploy-guide.md
+railway-deploy.md
+railway-env-fix.md
+test-production-local.sh
