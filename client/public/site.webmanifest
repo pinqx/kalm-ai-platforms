@@ -1,0 +1,23 @@
+{
+  "name": "KALM AI Platform",
+  "short_name": "KALM AI",
+  "description": "AI-powered sales call analysis and automation platform",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": [
+    "business",
+    "productivity",
+    "utilities"
+  ],
+  "lang": "en-US"
+} 

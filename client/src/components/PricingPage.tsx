@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { CheckIcon, XMarkIcon, StarIcon, SparklesIcon, CurrencyDollarIcon, UsersIcon, ShieldCheckIcon, CreditCardIcon, CheckCircleIcon } from '@heroicons/react/24/solid';
+import { CheckIcon, XMarkIcon, StarIcon, SparklesIcon, CurrencyDollarIcon, UsersIcon, ShieldCheckIcon, CreditCardIcon, CheckCircleIcon, ExclamationTriangleIcon } from '@heroicons/react/24/solid';
 import StripePaymentForm from './StripePaymentForm';
+import { getAuthState, isAuthenticated } from '../utils/auth';
 
 interface PricingPlan {
   id: string;
@@ -102,10 +103,36 @@ interface PricingPageProps {
 export default function PricingPage({ onSelectPlan }: PricingPageProps) {
   const [selectedPlanForPayment, setSelectedPlanForPayment] = useState<PricingPlan | null>(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [showAuthRequired, setShowAuthRequired] = useState(false);
+
+  // Check authentication status using utility functions
+  useEffect(() => {
+    const authState = getAuthState();
+    setUser(authState.user);
+  }, []);
 
   const handlePlanSelect = (plan: PricingPlan) => {
+    // Check if user is authenticated before allowing payment using utility function
+    if (!isAuthenticated()) {
+      setShowAuthRequired(true);
+      setSelectedPlanForPayment(plan);
+      return;
+    }
+
+    // If authenticated, proceed to payment
     setSelectedPlanForPayment(plan);
+    setShowAuthRequired(false);
     onSelectPlan?.(plan);
+  };
+
+  const handleSignInClick = () => {
+    // Clear the plan selection and auth required state
+    setSelectedPlanForPayment(null);
+    setShowAuthRequired(false);
+    
+    // Refresh the page to trigger the main app's authentication flow
+    window.location.reload();
   };
 
   const handlePaymentSuccess = () => {
@@ -120,7 +147,49 @@ export default function PricingPage({ onSelectPlan }: PricingPageProps) {
 
   const handleBackToPlans = () => {
     setSelectedPlanForPayment(null);
+    setShowAuthRequired(false);
   };
+
+  // Authentication required screen
+  if (showAuthRequired && selectedPlanForPayment) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-16 px-4">
+        <div className="max-w-md mx-auto">
+          <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+            <ExclamationTriangleIcon className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Sign In Required</h2>
+            <p className="text-gray-600 mb-4">
+              Please sign in to your account to continue with the {selectedPlanForPayment.name} plan purchase.
+            </p>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <h3 className="font-semibold text-blue-800 text-sm mb-2">Selected Plan:</h3>
+              <div className="text-blue-700">
+                <p className="font-medium">{selectedPlanForPayment.name}</p>
+                <p className="text-sm">${selectedPlanForPayment.price}/month</p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <button
+                onClick={handleSignInClick}
+                className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              >
+                Sign In to Continue
+              </button>
+              <button
+                onClick={handleBackToPlans}
+                className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+              >
+                Back to Plans
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-4">
+              Don't have an account? Signing up is free and takes less than a minute.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Payment success screen
   if (paymentSuccess) {
@@ -151,8 +220,8 @@ export default function PricingPage({ onSelectPlan }: PricingPageProps) {
     );
   }
 
-  // Payment form screen
-  if (selectedPlanForPayment) {
+  // Payment form screen (only show if authenticated)
+  if (selectedPlanForPayment && user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-16 px-4">
         <div className="max-w-md mx-auto">
@@ -160,6 +229,9 @@ export default function PricingPage({ onSelectPlan }: PricingPageProps) {
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Complete Your Purchase</h2>
             <div className="text-lg text-gray-600">
               {selectedPlanForPayment.name} Plan - ${selectedPlanForPayment.price}/month
+            </div>
+            <div className="text-sm text-gray-500 mt-2">
+              Signed in as: {user.email}
             </div>
           </div>
           

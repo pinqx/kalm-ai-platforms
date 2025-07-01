@@ -153,9 +153,12 @@ process.on('SIGTERM', () => {
   console.log('📤 SIGTERM received, shutting down gracefully...');
   server.close(() => {
     console.log('✅ Server closed gracefully');
-    mongoose.connection.close(false, () => {
+    mongoose.connection.close().then(() => {
       console.log('📊 MongoDB connection closed');
       process.exit(0);
+    }).catch((error) => {
+      console.error('❌ Error closing MongoDB connection:', error);
+      process.exit(1);
     });
   });
 });
@@ -332,12 +335,26 @@ app.use(sanitizeInput); // Input sanitization
 app.use(requestLogger); // Request logging
 app.use(performanceMonitor); // Performance monitoring
 
-// Rate limiting with enhanced rules
+// Rate limiting with enhanced rules - specific routes first, then general
 app.use('/api/auth', authLimiter); // Stricter auth limits
 app.use('/api/analyze-transcript', uploadLimiter); // Upload limits
 app.use('/api/generate-email', aiLimiter); // AI endpoint limits
 app.use('/api/chat', aiLimiter); // AI endpoint limits
-app.use('/api/', apiLimiter); // General API limits
+app.use('/api/payment', paymentLimiter); // Payment limits
+// Apply general API limiter only to routes not covered by specific limiters
+app.use('/api', (req, res, next) => {
+  // Skip if this route already has a specific limiter
+  const path = req.path;
+  if (path.startsWith('/auth') || 
+      path.startsWith('/analyze-transcript') || 
+      path.startsWith('/generate-email') || 
+      path.startsWith('/chat') ||
+      path.startsWith('/payment')) {
+    return next();
+  }
+  // Apply general limiter to other API routes
+  return apiLimiter(req, res, next);
+});
 
 // CORS configuration
 const corsOptions = {

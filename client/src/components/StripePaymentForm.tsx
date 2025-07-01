@@ -8,6 +8,7 @@ import {
 } from '@stripe/react-stripe-js';
 import { CheckCircleIcon, ExclamationTriangleIcon, CreditCardIcon } from '@heroicons/react/24/outline';
 import { getApiUrl } from '../config';
+import { getAuthState, isAuthenticated, isValidTokenFormat, clearAuth } from '../utils/auth';
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_BQokikJOvBiI2HlWgH4olfQ2');
@@ -27,6 +28,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, planId, onSuccess, on
   const [clientSecret, setClientSecret] = useState('');
   const [error, setError] = useState<string>('');
   const [isReady, setIsReady] = useState(false);
+  const [showAuthPrompt, setShowAuthPrompt] = useState(false);
 
   useEffect(() => {
     // Create payment intent when component mounts
@@ -36,25 +38,38 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, planId, onSuccess, on
   const createPaymentIntent = async () => {
     try {
       setError('');
+      setShowAuthPrompt(false);
       
-      const token = localStorage.getItem('token');
+      const authState = getAuthState();
+      
       console.log('🔍 Payment Debug:', {
-        hasToken: !!token,
-        tokenLength: token?.length,
+        isAuthenticated: authState.isAuthenticated,
+        hasUser: !!authState.user,
+        hasToken: !!authState.token,
+        tokenLength: authState.token?.length,
         amount,
         planId,
         apiUrl: getApiUrl()
       });
       
-      if (!token) {
-        throw new Error('Please sign in to continue with payment');
+      // Check authentication using utility functions
+      if (!authState.isAuthenticated) {
+        setShowAuthPrompt(true);
+        throw new Error('Authentication required for payment processing');
+      }
+
+      // Validate token format
+      if (!isValidTokenFormat(authState.token)) {
+        setShowAuthPrompt(true);
+        clearAuth(); // Clear potentially corrupted auth data
+        throw new Error('Invalid authentication token');
       }
       
       const response = await fetch(`${getApiUrl()}/api/payment/create-intent`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${authState.token}`
         },
         body: JSON.stringify({
           amount,
@@ -73,8 +88,10 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, planId, onSuccess, on
       console.log('🔍 Response Data:', data);
 
       if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error('Authentication failed. Please sign in again.');
+        if (response.status === 401 || response.status === 403) {
+          setShowAuthPrompt(true);
+          clearAuth(); // Clear expired/invalid auth data
+          throw new Error('Authentication session expired. Please sign in again.');
         } else if (response.status === 429) {
           throw new Error('Too many requests. Please wait a moment and try again.');
         } else {
@@ -94,8 +111,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, planId, onSuccess, on
       
       // Provide user-friendly error messages
       let userMessage = error.message;
-      if (error.message.includes('authentication')) {
-        userMessage = 'Please sign in to continue with payment. The payment system requires authentication.';
+      if (error.message.includes('Authentication required') || error.message.includes('Invalid authentication')) {
+        userMessage = 'Please sign in to continue with payment';
+        setShowAuthPrompt(true);
+      } else if (error.message.includes('Authentication session expired')) {
+        userMessage = 'Your session has expired. Please sign in again to continue.';
+        setShowAuthPrompt(true);
       } else if (error.message.includes('Too many')) {
         userMessage = 'Too many payment attempts. Please wait a few minutes and try again.';
       } else if (error.message.includes('fetch')) {
@@ -110,6 +131,14 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, planId, onSuccess, on
       setError(userMessage);
       setIsReady(true);
     }
+  };
+
+  const handleRetryAuth = () => {
+    // Clear potentially corrupted auth data using utility function
+    clearAuth();
+    
+    // Refresh the page to trigger re-authentication
+    window.location.reload();
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -201,11 +230,28 @@ const PaymentForm: React.FC<PaymentFormProps> = ({ amount, planId, onSuccess, on
         <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
           <h3 className="text-lg font-semibold text-red-800 mb-2">Payment Setup Error</h3>
           <p className="text-red-700 text-sm mb-3">{error}</p>
-          {error.includes('authentication') || error.includes('sign in') ? (
-            <div className="text-red-600 text-xs">
-              <p>• Please make sure you're signed in to your account</p>
-              <p>• Try refreshing the page and signing in again</p>
-              <p>• Contact support if the issue persists</p>
+          
+          {showAuthPrompt ? (
+            <div className="space-y-3">
+              <div className="text-red-600 text-xs">
+                <p>• Please make sure you're signed in to your account</p>
+                <p>• Try refreshing the page and signing in again</p>
+                <p>• Contact support if the issue persists and signing in or up doesn't work</p>
+              </div>
+              <div className="flex space-x-2">
+                <button
+                  onClick={handleRetryAuth}
+                  className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 transition-colors"
+                >
+                  Sign In Again
+                </button>
+                <button
+                  onClick={() => createPaymentIntent()}
+                  className="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700 transition-colors"
+                >
+                  Retry Payment Setup
+                </button>
+              </div>
             </div>
           ) : error.includes('Too many') ? (
             <div className="text-red-600 text-xs">
