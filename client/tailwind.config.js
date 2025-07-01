@@ -36,6 +36,16 @@ export default {
         },
       },
       colors: {
+        // KALM Brand Color Palette
+        kalm: {
+          primary: '#1A73E8',      // Google Blue - Primary CTA buttons
+          secondary: '#0F172A',    // Slate-900 - Headers, text
+          accent1: '#6366F1',      // Indigo-500 - Hover states, badges
+          accent2: '#10B981',      // Emerald-500 - Success messages, highlights
+          background: '#F9FAFB',   // Gray-50 - Clean background
+          surface: '#FFFFFF',      // White - Card backgrounds
+          text: '#111827',         // Gray-900 - Readable dark text
+        },
         primary: {
           50: '#eff6ff',
           100: '#dbeafe',
@@ -113,5 +123,25 @@ export default {
     'to-rose-600',
     'bg-gradient-to-r',
     'bg-gradient-to-br',
+    // KALM brand colors
+    'bg-kalm-primary',
+    'bg-kalm-secondary',
+    'bg-kalm-accent1',
+    'bg-kalm-accent2',
+    'bg-kalm-background',
+    'bg-kalm-surface',
+    'text-kalm-primary',
+    'text-kalm-secondary',
+    'text-kalm-accent1',
+    'text-kalm-accent2',
+    'text-kalm-text',
+    'border-kalm-primary',
+    'border-kalm-secondary',
+    'border-kalm-accent1',
+    'border-kalm-accent2',
+    'hover:bg-kalm-primary',
+    'hover:bg-kalm-accent1',
+    'hover:text-kalm-primary',
+    'hover:border-kalm-primary',
   ]
 } 

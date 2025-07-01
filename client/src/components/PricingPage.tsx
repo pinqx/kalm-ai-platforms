@@ -10,6 +10,7 @@ interface PricingPlan {
   description: string;
   icon: any;
   color: string;
+  bgColor: string;
   features: string[];
   notIncluded: string[];
   popular: boolean;
@@ -23,7 +24,8 @@ const plans: PricingPlan[] = [
     price: 29,
     description: 'Perfect for individual sales professionals',
     icon: CurrencyDollarIcon,
-    color: 'from-green-500 to-emerald-600',
+    color: 'text-kalm-accent2',
+    bgColor: 'bg-kalm-accent2/10',
     stripePriceId: 'price_starter_monthly',
     features: [
       'Up to 50 transcript analyses per month',
@@ -48,7 +50,8 @@ const plans: PricingPlan[] = [
     price: 79,
     description: 'Best for growing sales teams',
     icon: UsersIcon,
-    color: 'from-blue-500 to-indigo-600',
+    color: 'text-kalm-primary',
+    bgColor: 'bg-kalm-primary/10',
     stripePriceId: 'price_professional_monthly',
     features: [
       'Unlimited transcript analyses',
@@ -75,7 +78,8 @@ const plans: PricingPlan[] = [
     price: 149,
     description: 'Complete solution for large organizations',
     icon: SparklesIcon,
-    color: 'from-purple-500 to-pink-600',
+    color: 'text-kalm-accent1',
+    bgColor: 'bg-kalm-accent1/10',
     stripePriceId: 'price_enterprise_monthly',
     features: [
       'Everything in Professional',
@@ -153,17 +157,17 @@ export default function PricingPage({ onSelectPlan }: PricingPageProps) {
   // Authentication required screen
   if (showAuthRequired && selectedPlanForPayment) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-16 px-4">
+      <div className="min-h-screen bg-kalm-background py-16 px-4">
         <div className="max-w-md mx-auto">
-          <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+          <div className="card-kalm p-8 text-center">
             <ExclamationTriangleIcon className="h-12 w-12 text-amber-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Sign In Required</h2>
-            <p className="text-gray-600 mb-4">
+            <h2 className="text-2xl font-bold text-kalm-secondary mb-4">Sign In Required</h2>
+            <p className="text-kalm-text/70 mb-4">
               Please sign in to your account to continue with the {selectedPlanForPayment.name} plan purchase.
             </p>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <h3 className="font-semibold text-blue-800 text-sm mb-2">Selected Plan:</h3>
-              <div className="text-blue-700">
+            <div className="bg-kalm-primary/10 border border-kalm-primary/20 rounded-lg p-4 mb-6">
+              <h3 className="font-semibold text-kalm-primary text-sm mb-2">Selected Plan:</h3>
+              <div className="text-kalm-primary">
                 <p className="font-medium">{selectedPlanForPayment.name}</p>
                 <p className="text-sm">${selectedPlanForPayment.price}/month</p>
               </div>
@@ -171,18 +175,18 @@ export default function PricingPage({ onSelectPlan }: PricingPageProps) {
             <div className="space-y-3">
               <button
                 onClick={handleSignInClick}
-                className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                className="btn-kalm-primary w-full"
               >
                 Sign In to Continue
               </button>
               <button
                 onClick={handleBackToPlans}
-                className="w-full bg-gray-100 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                className="btn-kalm-secondary w-full"
               >
                 Back to Plans
               </button>
             </div>
-            <p className="text-xs text-gray-500 mt-4">
+            <p className="text-xs text-kalm-text/50 mt-4">
               Don't have an account? Signing up is free and takes less than a minute.
             </p>
           </div>
@@ -194,25 +198,40 @@ export default function PricingPage({ onSelectPlan }: PricingPageProps) {
   // Payment success screen
   if (paymentSuccess) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-16 px-4">
+      <div className="min-h-screen bg-kalm-background py-16 px-4">
         <div className="max-w-2xl mx-auto text-center">
-          <div className="bg-white rounded-2xl shadow-xl p-8">
-            <CheckCircleIcon className="h-16 w-16 text-green-500 mx-auto mb-4" />
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Payment Successful!</h2>
-            <p className="text-lg text-gray-600 mb-6">
-              Welcome to the {selectedPlanForPayment?.name} plan!
+          <div className="card-kalm p-8">
+            <CheckCircleIcon className="h-16 w-16 text-kalm-accent2 mx-auto mb-4" />
+            <h2 className="text-3xl font-bold text-kalm-secondary mb-4">Payment Successful!</h2>
+            <p className="text-kalm-text/70 mb-6">
+              Welcome to KALM! Your subscription has been activated and you can start using all features immediately.
             </p>
-            <p className="text-sm text-gray-500 mb-6">
-              You'll receive a confirmation email shortly. Your subscription is now active.
-            </p>
+            <div className="bg-kalm-accent2/10 border border-kalm-accent2/20 rounded-lg p-6 mb-6">
+              <h3 className="font-semibold text-kalm-accent2 text-lg mb-2">What's Next?</h3>
+              <ul className="text-left text-kalm-text/80 space-y-2">
+                <li className="flex items-center">
+                  <CheckIcon className="h-4 w-4 text-kalm-accent2 mr-2" />
+                  Upload your first sales conversation transcript
+                </li>
+                <li className="flex items-center">
+                  <CheckIcon className="h-4 w-4 text-kalm-accent2 mr-2" />
+                  Explore the AI-powered insights dashboard
+                </li>
+                <li className="flex items-center">
+                  <CheckIcon className="h-4 w-4 text-kalm-accent2 mr-2" />
+                  Generate personalized follow-up emails
+                </li>
+                <li className="flex items-center">
+                  <CheckIcon className="h-4 w-4 text-kalm-accent2 mr-2" />
+                  Set up your team collaboration features
+                </li>
+              </ul>
+            </div>
             <button
-              onClick={() => {
-                setPaymentSuccess(false);
-                setSelectedPlanForPayment(null);
-              }}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+              onClick={() => window.location.href = '/dashboard'}
+              className="btn-kalm-primary"
             >
-              Continue to Dashboard
+              Go to Dashboard
             </button>
           </div>
         </div>
@@ -220,30 +239,76 @@ export default function PricingPage({ onSelectPlan }: PricingPageProps) {
     );
   }
 
-  // Payment form screen (only show if authenticated)
-  if (selectedPlanForPayment && user) {
+  // Payment form screen
+  if (selectedPlanForPayment) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-16 px-4">
-        <div className="max-w-md mx-auto">
-          <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Complete Your Purchase</h2>
-            <div className="text-lg text-gray-600">
-              {selectedPlanForPayment.name} Plan - ${selectedPlanForPayment.price}/month
-            </div>
-            <div className="text-sm text-gray-500 mt-2">
-              Signed in as: {user.email}
-            </div>
+      <div className="min-h-screen bg-kalm-background py-16 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <button
+              onClick={handleBackToPlans}
+              className="text-kalm-primary hover:text-kalm-accent1 transition-colors mb-4 flex items-center justify-center mx-auto"
+            >
+              ← Back to Plans
+            </button>
+            <h1 className="text-3xl font-bold text-kalm-secondary mb-2">
+              Complete Your Purchase
+            </h1>
+            <p className="text-kalm-text/70">
+              Secure payment powered by Stripe
+            </p>
           </div>
           
-          <StripePaymentForm
-            amount={selectedPlanForPayment.price}
-            planId={selectedPlanForPayment.id}
-            onSuccess={handlePaymentSuccess}
-            onError={(error) => {
-              console.error('Payment error:', error);
-            }}
-            onCancel={handleBackToPlans}
-          />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Plan Summary */}
+            <div className="card-kalm p-8">
+              <h2 className="text-2xl font-bold text-kalm-secondary mb-6">Order Summary</h2>
+              <div className="bg-kalm-primary/10 border border-kalm-primary/20 rounded-lg p-6 mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="font-semibold text-kalm-secondary text-lg">{selectedPlanForPayment.name}</h3>
+                    <p className="text-kalm-text/70 text-sm">{selectedPlanForPayment.description}</p>
+                  </div>
+                  <div className={`w-12 h-12 ${selectedPlanForPayment.bgColor} rounded-xl flex items-center justify-center`}>
+                    <selectedPlanForPayment.icon className={`h-6 w-6 ${selectedPlanForPayment.color}`} />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-kalm-text/70">Monthly subscription</span>
+                  <span className="text-2xl font-bold text-kalm-secondary">${selectedPlanForPayment.price}</span>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <h4 className="font-semibold text-kalm-secondary">What's included:</h4>
+                <ul className="space-y-2">
+                  {selectedPlanForPayment.features.slice(0, 5).map((feature, index) => (
+                    <li key={index} className="flex items-center text-kalm-text/80">
+                      <CheckIcon className="h-4 w-4 text-kalm-accent2 mr-3 flex-shrink-0" />
+                      {feature}
+                    </li>
+                  ))}
+                  {selectedPlanForPayment.features.length > 5 && (
+                    <li className="text-kalm-primary text-sm font-medium">
+                      +{selectedPlanForPayment.features.length - 5} more features
+                    </li>
+                  )}
+                </ul>
+              </div>
+            </div>
+
+                         {/* Payment Form */}
+             <div className="card-kalm p-8">
+               <h2 className="text-2xl font-bold text-kalm-secondary mb-6">Payment Information</h2>
+               <StripePaymentForm
+                 amount={selectedPlanForPayment.price}
+                 planId={selectedPlanForPayment.id}
+                 onSuccess={handlePaymentSuccess}
+                 onError={(error) => console.error('Payment error:', error)}
+                 onCancel={handleBackToPlans}
+               />
+             </div>
+          </div>
         </div>
       </div>
     );
@@ -251,247 +316,149 @@ export default function PricingPage({ onSelectPlan }: PricingPageProps) {
 
   // Main pricing page
   return (
-    <div className="bg-gradient-to-br from-gray-50 via-white to-blue-50 py-24 sm:py-32 overflow-hidden">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <div className="mx-auto max-w-4xl text-center animate-fade-in">
-          <div className="flex justify-center mb-6">
-            <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center">
-              <CurrencyDollarIcon className="h-8 w-8 text-white" />
+    <div className="min-h-screen bg-kalm-background">
+      {/* Header */}
+      <div className="bg-kalm-surface border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="text-center">
+            <h1 className="text-4xl md:text-5xl font-bold text-kalm-secondary mb-6">
+              Simple, Transparent Pricing
+            </h1>
+            <p className="text-xl text-kalm-text/70 max-w-3xl mx-auto mb-8">
+              Choose the perfect plan for your sales team. All plans include a 14-day free trial with no credit card required.
+            </p>
+            <div className="flex items-center justify-center space-x-4 text-sm text-kalm-text/70">
+              <div className="flex items-center">
+                <CheckIcon className="h-4 w-4 text-kalm-accent2 mr-2" />
+                No setup fees
+              </div>
+              <div className="flex items-center">
+                <CheckIcon className="h-4 w-4 text-kalm-accent2 mr-2" />
+                Cancel anytime
+              </div>
+              <div className="flex items-center">
+                <CheckIcon className="h-4 w-4 text-kalm-accent2 mr-2" />
+                Free trial
+              </div>
             </div>
           </div>
-          <div className="inline-flex items-center px-4 py-2 bg-blue-100 text-blue-800 rounded-full text-sm font-medium mb-6">
-            <ShieldCheckIcon className="h-4 w-4 mr-2" />
-            30-day money-back guarantee
-          </div>
-          <h2 className="text-lg font-semibold leading-7 text-blue-600 mb-4">Transparent Pricing</h2>
-          <p className="text-5xl font-bold tracking-tight text-gray-900 sm:text-6xl mb-6">
-            Choose the right plan for your{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
-              success
-            </span>
-          </p>
-          <p className="text-xl leading-8 text-gray-600 max-w-3xl mx-auto">
-            Transform your sales conversations into coaching opportunities with AI-powered insights. 
-            Start with a 14-day free trial on any plan.
-          </p>
         </div>
+      </div>
 
-        <div className="mx-auto mt-20 grid max-w-lg grid-cols-1 gap-8 lg:max-w-none lg:grid-cols-3">
+      {/* Pricing Cards */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {plans.map((plan, index) => (
             <div
-              key={plan.name}
-              className={`relative group animate-fade-in transform hover:scale-105 transition-all duration-300 ${
-                plan.popular
-                  ? 'scale-105 z-10'
-                  : ''
-              }`}
-              style={{ animationDelay: `${index * 0.15}s` }}
+              key={plan.id}
+              className={`relative ${plan.popular ? 'ring-2 ring-kalm-primary' : ''} card-kalm p-8 animate-fade-in`}
+              style={{ animationDelay: `${index * 0.1}s` }}
             >
               {plan.popular && (
                 <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                  <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2 rounded-full text-sm font-semibold shadow-lg flex items-center">
-                    <StarIcon className="h-4 w-4 mr-2" />
+                  <span className="bg-kalm-primary text-white px-4 py-1 rounded-full text-sm font-semibold">
                     Most Popular
-                  </div>
+                  </span>
                 </div>
               )}
               
-              <div
-                className={`h-full rounded-3xl p-8 xl:p-10 shadow-2xl border border-gray-200/50 transition-all duration-300 ${
-                  plan.popular
-                    ? 'bg-gradient-to-br from-blue-50 to-indigo-50 ring-2 ring-blue-500 shadow-blue-200/50'
-                    : 'bg-white hover:shadow-xl'
-                }`}
-              >
-                <div className="flex items-center justify-between gap-x-4 mb-6">
-                  <div className="flex items-center">
-                    <div className={`w-12 h-12 bg-gradient-to-r ${plan.color} rounded-xl flex items-center justify-center mr-4`}>
-                      <plan.icon className="h-6 w-6 text-white" />
-                    </div>
-                    <h3 className="text-2xl font-bold text-gray-900">
-                      {plan.name}
-                    </h3>
-                  </div>
+              <div className="text-center mb-8">
+                <div className={`w-16 h-16 ${plan.bgColor} rounded-2xl flex items-center justify-center mx-auto mb-4`}>
+                  <plan.icon className={`h-8 w-8 ${plan.color}`} />
                 </div>
-                
-                <p className="text-gray-600 text-lg mb-6">{plan.description}</p>
-                
-                <div className="mb-8">
-                  <div className="flex items-baseline gap-x-2">
-                    <span className="text-5xl font-bold tracking-tight text-gray-900">
-                      ${plan.price}
-                    </span>
-                    <span className="text-lg font-semibold text-gray-500">/month</span>
-                  </div>
-                  <p className="text-sm text-gray-500 mt-2">Billed monthly • 14-day free trial</p>
+                <h3 className="text-2xl font-bold text-kalm-secondary mb-2">{plan.name}</h3>
+                <p className="text-kalm-text/70 mb-4">{plan.description}</p>
+                <div className="mb-6">
+                  <span className="text-4xl font-bold text-kalm-secondary">${plan.price}</span>
+                  <span className="text-kalm-text/70">/month</span>
                 </div>
-                
                 <button
-                  className={`w-full py-4 px-6 rounded-xl text-lg font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl mb-8 ${
-                    plan.popular
-                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700'
-                      : 'bg-gradient-to-r from-gray-800 to-gray-900 text-white hover:from-gray-700 hover:to-gray-800'
-                  }`}
                   onClick={() => handlePlanSelect(plan)}
+                  className={`w-full py-3 px-6 rounded-xl font-semibold transition-all duration-300 ${
+                    plan.popular
+                      ? 'bg-kalm-primary text-white hover:bg-kalm-accent1 transform hover:scale-105'
+                      : 'bg-kalm-surface text-kalm-primary border-2 border-kalm-primary hover:bg-kalm-primary hover:text-white'
+                  }`}
                 >
-                  Get Started
+                  {plan.popular ? 'Get Started' : 'Choose Plan'}
                 </button>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="font-semibold text-kalm-secondary">What's included:</h4>
+                <ul className="space-y-3">
+                  {plan.features.map((feature, featureIndex) => (
+                    <li key={featureIndex} className="flex items-start">
+                      <CheckIcon className="h-5 w-5 text-kalm-accent2 mr-3 flex-shrink-0 mt-0.5" />
+                      <span className="text-kalm-text/80 text-sm">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
                 
-                <div className="space-y-4">
-                  <h4 className="font-semibold text-gray-900 text-lg mb-4">What's included:</h4>
-                  <ul className="space-y-3">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-x-3">
-                        <div className="flex-shrink-0 w-6 h-6 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center mt-0.5">
-                          <CheckIcon className="h-4 w-4 text-white" />
-                        </div>
-                        <span className="text-gray-700 leading-relaxed">{feature}</span>
-                      </li>
-                    ))}
-                    {plan.notIncluded.map((feature) => (
-                      <li key={feature} className="flex items-start gap-x-3">
-                        <div className="flex-shrink-0 w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center mt-0.5">
-                          <XMarkIcon className="h-4 w-4 text-gray-400" />
-                        </div>
-                        <span className="text-gray-400 leading-relaxed">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                {plan.notIncluded.length > 0 && (
+                  <div className="mt-6 pt-6 border-t border-gray-200">
+                    <h4 className="font-semibold text-kalm-text/70 mb-3">Not included:</h4>
+                    <ul className="space-y-2">
+                      {plan.notIncluded.map((feature, featureIndex) => (
+                        <li key={featureIndex} className="flex items-start">
+                          <XMarkIcon className="h-4 w-4 text-gray-400 mr-3 flex-shrink-0 mt-0.5" />
+                          <span className="text-kalm-text/50 text-sm">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
           ))}
         </div>
 
-        {/* Trust Indicators */}
-        <div className="mt-16 text-center">
-          <div className="flex items-center justify-center space-x-8 text-gray-500">
-            <div className="flex items-center">
-              <ShieldCheckIcon className="h-5 w-5 mr-2" />
-              <span className="text-sm">256-bit SSL encryption</span>
-            </div>
-            <div className="flex items-center">
-              <CheckIcon className="h-5 w-5 mr-2" />
-              <span className="text-sm">30-day money back</span>
-            </div>
-            <div className="flex items-center">
-              <CreditCardIcon className="h-5 w-5 mr-2" />
-              <span className="text-sm">Secure payments</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-20 text-center animate-fade-in" style={{ animationDelay: '0.6s' }}>
-          <p className="text-lg leading-7 text-gray-600">
-            Need a custom solution?{' '}
-            <a href="#contact" className="font-semibold text-blue-600 hover:text-blue-500 transition-colors duration-200 underline decoration-2 underline-offset-4">
-              Contact our sales team →
-            </a>
-          </p>
-        </div>
-
-        <div className="mx-auto mt-20 max-w-5xl animate-fade-in" style={{ animationDelay: '0.8s' }}>
-          <div className="bg-gradient-to-r from-gray-900 via-blue-900 to-indigo-900 rounded-3xl shadow-2xl overflow-hidden">
-            <div className="lg:flex">
-              <div className="p-10 lg:flex-auto">
-                <div className="flex items-center mb-6">
-                  <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center mr-4">
-                    <SparklesIcon className="h-6 w-6 text-white" />
-                  </div>
-                  <h3 className="text-3xl font-bold tracking-tight text-white">Enterprise+</h3>
-                </div>
-                <p className="text-lg leading-8 text-gray-300 mb-8">
-                  For large organizations that need custom integrations, on-premise deployment, 
-                  or specialized AI model training.
-                </p>
-                <div className="grid grid-cols-1 gap-6 text-gray-300 sm:grid-cols-2">
-                  {[
-                    'Custom integrations',
-                    'On-premise deployment', 
-                    'Advanced security features',
-                    'Custom AI model training',
-                    'SLA guarantees',
-                    '24/7 priority support'
-                  ].map((feature) => (
-                    <div key={feature} className="flex items-center gap-x-3">
-                      <div className="w-6 h-6 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center">
-                        <CheckIcon className="h-4 w-4 text-white" />
-                      </div>
-                      <span>{feature}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="p-10 lg:mt-0 lg:w-full lg:max-w-md lg:flex-shrink-0">
-                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-8 text-center border border-white/20">
-                  <div className="mx-auto max-w-xs">
-                    <p className="text-lg font-semibold text-yellow-400 mb-4">Custom Pricing</p>
-                    <div className="mb-6">
-                      <span className="text-4xl font-bold tracking-tight text-white">Contact us</span>
-                    </div>
-                    <p className="text-sm text-gray-300 mb-8">
-                      Starting at $5,000/month for teams of 50+
-                    </p>
-                    <button className="w-full bg-gradient-to-r from-yellow-400 to-orange-500 text-gray-900 px-6 py-4 rounded-xl text-lg font-semibold hover:from-yellow-300 hover:to-orange-400 transition-all duration-300 transform hover:scale-105 shadow-lg">
-                      Contact Sales Team
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Additional Features Section */}
-        <div className="mt-24 animate-fade-in" style={{ animationDelay: '1s' }}>
-          <div className="text-center mb-16">
-            <h3 className="text-3xl font-bold text-gray-900 mb-4">Why Choose Our Platform?</h3>
-            <p className="text-lg text-gray-600">Every plan includes these powerful features</p>
+        {/* FAQ Section */}
+        <div className="mt-24">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-kalm-secondary mb-4">Frequently Asked Questions</h2>
+            <p className="text-kalm-text/70">Everything you need to know about KALM pricing</p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: SparklesIcon,
-                title: 'AI-Powered Insights',
-                description: 'Get instant analysis of conversation sentiment, objections, and opportunities',
-                color: 'from-blue-500 to-indigo-600'
-              },
-              {
-                icon: StarIcon,
-                title: '14-Day Free Trial',
-                description: 'Try any plan risk-free with full access to all features',
-                color: 'from-yellow-500 to-orange-600'
-              },
-              {
-                icon: UsersIcon,
-                title: 'Expert Support',
-                description: 'Get help from our sales coaching experts whenever you need it',
-                color: 'from-green-500 to-emerald-600'
-              }
-            ].map((feature, index) => (
-              <div key={index} className="bg-white rounded-2xl p-8 shadow-xl border border-gray-200/50 text-center transform hover:scale-105 transition-all duration-300">
-                <div className={`w-16 h-16 bg-gradient-to-r ${feature.color} rounded-2xl flex items-center justify-center mx-auto mb-6`}>
-                  <feature.icon className="h-8 w-8 text-white" />
-                </div>
-                <h4 className="text-xl font-bold text-gray-900 mb-4">{feature.title}</h4>
-                <p className="text-gray-600 leading-relaxed">{feature.description}</p>
-              </div>
-            ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="card-kalm p-6">
+              <h3 className="font-semibold text-kalm-secondary mb-3">Can I change plans anytime?</h3>
+              <p className="text-kalm-text/70 text-sm">Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.</p>
+            </div>
+            <div className="card-kalm p-6">
+              <h3 className="font-semibold text-kalm-secondary mb-3">Is there a free trial?</h3>
+              <p className="text-kalm-text/70 text-sm">Yes, all plans include a 14-day free trial with full access to all features.</p>
+            </div>
+            <div className="card-kalm p-6">
+              <h3 className="font-semibold text-kalm-secondary mb-3">What payment methods do you accept?</h3>
+              <p className="text-kalm-text/70 text-sm">We accept all major credit cards, debit cards, and PayPal. All payments are processed securely through Stripe.</p>
+            </div>
+            <div className="card-kalm p-6">
+              <h3 className="font-semibold text-kalm-secondary mb-3">Can I cancel anytime?</h3>
+              <p className="text-kalm-text/70 text-sm">Absolutely. You can cancel your subscription at any time with no cancellation fees or penalties.</p>
+            </div>
           </div>
         </div>
 
-        {/* Money Back Guarantee */}
-        <div className="mt-20 bg-gradient-to-r from-green-50 to-emerald-50 rounded-3xl p-8 text-center border border-green-200 animate-fade-in" style={{ animationDelay: '1.2s' }}>
-          <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center">
-              <CheckIcon className="h-8 w-8 text-white" />
+        {/* CTA Section */}
+        <div className="mt-24 text-center">
+          <div className="card-kalm p-12">
+            <h2 className="text-3xl font-bold text-kalm-secondary mb-4">Ready to Transform Your Sales Team?</h2>
+            <p className="text-kalm-text/70 mb-8 max-w-2xl mx-auto">
+              Join hundreds of sales teams already using KALM to close more deals and scale their coaching.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <button
+                onClick={() => handlePlanSelect(plans[1])} // Professional plan
+                className="btn-kalm-primary"
+              >
+                Start Free Trial
+              </button>
+              <button className="btn-kalm-secondary">
+                Schedule a Demo
+              </button>
             </div>
           </div>
-          <h3 className="text-2xl font-bold text-gray-900 mb-4">30-Day Money-Back Guarantee</h3>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Not satisfied? Get a full refund within 30 days, no questions asked. We're confident you'll love the results.
-          </p>
         </div>
       </div>
     </div>

@@ -9,7 +9,12 @@ import {
   SparklesIcon,
   StarIcon,
   TrophyIcon,
-  BoltIcon
+  BoltIcon,
+  Bars3Icon,
+  XMarkIcon,
+  UserGroupIcon,
+  LightBulbIcon,
+  ShieldCheckIcon
 } from '@heroicons/react/24/outline';
 
 interface LandingPageProps {
@@ -20,6 +25,7 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,22 +63,32 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
   const features = [
     {
       icon: ChartBarIcon,
-      title: 'AI-Powered Analysis',
+      title: 'AI-Powered Sales Analysis',
       description: 'Get instant insights on sentiment, objections, and next steps from every sales conversation.',
-      color: 'from-blue-500 to-indigo-600',
+      color: 'text-kalm-primary',
+      bgColor: 'bg-kalm-primary/10'
     },
     {
       icon: EnvelopeIcon,
       title: 'Smart Email Generation',
       description: 'Generate personalized follow-up emails and proposals based on conversation analysis.',
-      color: 'from-purple-500 to-pink-600',
+      color: 'text-kalm-accent1',
+      bgColor: 'bg-kalm-accent1/10'
     },
     {
       icon: ChatBubbleLeftRightIcon,
       title: 'Sales Coaching Assistant',
       description: 'Chat with your AI coach to get strategic advice and objection handling tips.',
-      color: 'from-green-500 to-emerald-600',
+      color: 'text-kalm-accent2',
+      bgColor: 'bg-kalm-accent2/10'
     },
+    {
+      icon: UserGroupIcon,
+      title: 'Team Performance Tracking',
+      description: 'Scale coaching across entire teams with comprehensive performance analytics.',
+      color: 'text-kalm-primary',
+      bgColor: 'bg-kalm-primary/10'
+    }
   ];
 
   const benefits = [
@@ -115,30 +131,96 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
   ];
 
   return (
-    <div className="bg-white overflow-hidden">
-      {/* Enhanced Hero Section */}
-      <div className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-900 overflow-hidden">
-        {/* Animated background elements */}
+    <div className="bg-kalm-background min-h-screen">
+      {/* Header */}
+      <header className="header-kalm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            {/* Logo */}
+            <div className="flex items-center">
+              <div className="flex items-center space-x-2">
+                <div className="w-10 h-10 bg-gradient-to-br from-kalm-primary to-kalm-accent1 rounded-xl flex items-center justify-center">
+                  <SparklesIcon className="h-6 w-6 text-white" />
+                </div>
+                <span className="text-2xl font-bold text-kalm-secondary">KALM</span>
+              </div>
+            </div>
+
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center space-x-8">
+              <a href="#features" className="text-kalm-text hover:text-kalm-primary transition-colors duration-200 font-medium">
+                Features
+              </a>
+              <a href="#pricing" className="text-kalm-text hover:text-kalm-primary transition-colors duration-200 font-medium">
+                Pricing
+              </a>
+              <a href="#contact" className="text-kalm-text hover:text-kalm-primary transition-colors duration-200 font-medium">
+                Contact
+              </a>
+              <button
+                onClick={onGetStarted}
+                className="btn-kalm-primary"
+              >
+                Book Demo
+              </button>
+            </nav>
+
+            {/* Mobile menu button */}
+            <div className="md:hidden">
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="text-kalm-text hover:text-kalm-primary transition-colors duration-200"
+              >
+                {mobileMenuOpen ? (
+                  <XMarkIcon className="h-6 w-6" />
+                ) : (
+                  <Bars3Icon className="h-6 w-6" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile Navigation */}
+          {mobileMenuOpen && (
+            <div className="md:hidden py-4 border-t border-gray-200">
+              <nav className="flex flex-col space-y-4">
+                <a href="#features" className="text-kalm-text hover:text-kalm-primary transition-colors duration-200 font-medium">
+                  Features
+                </a>
+                <a href="#pricing" className="text-kalm-text hover:text-kalm-primary transition-colors duration-200 font-medium">
+                  Pricing
+                </a>
+                <a href="#contact" className="text-kalm-text hover:text-kalm-primary transition-colors duration-200 font-medium">
+                  Contact
+                </a>
+                <button
+                  onClick={onGetStarted}
+                  className="btn-kalm-primary w-full"
+                >
+                  Book Demo
+                </button>
+              </nav>
+            </div>
+          )}
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="hero-kalm relative overflow-hidden">
         <div className="absolute inset-0">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply opacity-20 animate-bounce-gentle"></div>
-          <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-400 rounded-full mix-blend-multiply opacity-20 animate-bounce-gentle" style={{ animationDelay: '1s' }}></div>
-          <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply opacity-20 animate-bounce-gentle" style={{ animationDelay: '2s' }}></div>
+          <div className="absolute top-0 left-0 w-96 h-96 bg-kalm-primary/20 rounded-full mix-blend-multiply animate-bounce-gentle"></div>
+          <div className="absolute top-0 right-0 w-96 h-96 bg-kalm-accent1/20 rounded-full mix-blend-multiply animate-bounce-gentle" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-kalm-accent2/20 rounded-full mix-blend-multiply animate-bounce-gentle" style={{ animationDelay: '2s' }}></div>
         </div>
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
           <div className="text-center animate-fade-in">
-            <div className="flex justify-center mb-8">
-              <div className="relative">
-                <SparklesIcon className="h-20 w-20 text-yellow-300 animate-pulse-soft" />
-                <div className="absolute -top-2 -right-2 w-6 h-6 bg-green-400 rounded-full animate-ping"></div>
-              </div>
-            </div>
             <h1 className="text-5xl md:text-7xl font-bold text-white mb-8 leading-tight">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-orange-400 animate-gradient">
-                KALM
+                AI-Powered Sales Support
               </span>
-              <span className="block text-white">
-                Your AI Sales Intelligence
+              <span className="block text-white mt-4">
+                That Closes Deals
               </span>
             </h1>
             <p className="text-xl md:text-2xl text-blue-100 mb-12 max-w-4xl mx-auto leading-relaxed">
@@ -148,10 +230,13 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center animate-slide-up">
               <button
                 onClick={onGetStarted}
-                className="group bg-gradient-to-r from-yellow-400 to-orange-400 text-blue-900 px-10 py-4 rounded-xl font-bold text-lg hover:from-yellow-300 hover:to-orange-300 transition-all duration-300 flex items-center justify-center shadow-2xl transform hover:scale-105 hover:shadow-3xl"
+                className="btn-kalm-primary group"
               >
                 Start Free Trial
                 <ArrowRightIcon className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform duration-200" />
+              </button>
+              <button className="btn-kalm-secondary">
+                Book a Demo
               </button>
             </div>
             <p className="text-blue-200 text-sm mt-6 animate-fade-in" style={{ animationDelay: '0.3s' }}>
@@ -159,19 +244,19 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
             </p>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Enhanced Social Proof */}
-      <div className="bg-gradient-to-r from-gray-50 to-blue-50 py-16 border-b border-gray-200">
+      {/* Social Proof */}
+      <section className="bg-kalm-surface py-16 border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <p className="text-center text-gray-600 text-lg mb-12 font-medium">
+          <p className="text-center text-kalm-text/70 text-lg mb-12 font-medium">
             Trusted by sales teams at innovative companies worldwide
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center justify-center">
             {['TechCorp', 'GrowthCo', 'ScaleUp Inc', 'InnovateSales'].map((company, index) => (
               <div key={company} className="text-center animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                <div className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-gray-100">
-                  <p className="text-gray-800 font-bold text-lg">{company}</p>
+                <div className="card-kalm p-8">
+                  <p className="text-kalm-text font-bold text-lg">{company}</p>
                   <div className="flex justify-center mt-2">
                     {[...Array(5)].map((_, i) => (
                       <StarIcon key={i} className="h-4 w-4 text-yellow-400 fill-current" />
@@ -182,191 +267,156 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
             ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Enhanced Results Section */}
-      <div className="py-24 bg-white">
+      {/* Features Section */}
+      <section id="features" className="py-24 bg-kalm-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20 animate-fade-in">
-            <h2 className="text-5xl font-bold text-gray-900 mb-6">
+            <h2 className="text-4xl md:text-5xl font-bold text-kalm-secondary mb-6">
+              Everything You Need to Scale Sales
+            </h2>
+            <p className="text-xl text-kalm-text/70 max-w-3xl mx-auto">
+              Powerful AI tools designed specifically for modern sales teams
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {features.map((feature, index) => (
+              <div key={feature.title} className="feature-card-kalm animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                <div className={`w-16 h-16 ${feature.bgColor} rounded-2xl flex items-center justify-center mb-6`}>
+                  <feature.icon className={`h-8 w-8 ${feature.color}`} />
+                </div>
+                <h3 className="text-xl font-bold text-kalm-secondary mb-4">{feature.title}</h3>
+                <p className="text-kalm-text/70 leading-relaxed">{feature.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Results Section */}
+      <section className="py-24 bg-kalm-surface">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-20 animate-fade-in">
+            <h2 className="text-4xl md:text-5xl font-bold text-kalm-secondary mb-6">
               Proven Results That Drive Revenue
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-xl text-kalm-text/70 max-w-3xl mx-auto">
               Our customers see measurable improvements in sales performance within 30 days
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {stats.map((stat, index) => (
-              <div key={index} className="text-center group animate-fade-in" style={{ animationDelay: `${index * 0.2}s` }}>
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-3xl p-8 transform group-hover:scale-105 transition-all duration-300 shadow-lg group-hover:shadow-2xl border border-blue-100">
-                  <div className="flex justify-center mb-4">
-                    <stat.icon className="h-12 w-12 text-blue-600" />
-                  </div>
-                  <div className="text-6xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-4">
-                    {stat.number}
-                  </div>
-                  <p className="text-xl text-gray-900 font-semibold mb-2">{stat.label}</p>
-                  <p className="text-gray-600">Average improvement across all customers</p>
+              <div key={stat.label} className="stats-card-kalm animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
+                  <stat.icon className="h-8 w-8 text-white" />
                 </div>
+                <div className="text-4xl font-bold mb-2">{stat.number}</div>
+                <div className="text-white/90">{stat.label}</div>
               </div>
             ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Enhanced Features Section */}
-      <div className="py-24 bg-gradient-to-br from-gray-50 to-blue-50">
+      {/* Testimonials Section */}
+      <section className="py-24 bg-kalm-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-20 animate-fade-in">
-            <h2 className="text-5xl font-bold text-gray-900 mb-6">
-              Everything You Need to Scale Sales Coaching
+            <h2 className="text-4xl md:text-5xl font-bold text-kalm-secondary mb-6">
+              What Our Customers Say
             </h2>
-            <p className="text-xl text-gray-600">
-              Comprehensive tools designed for modern sales teams
+            <p className="text-xl text-kalm-text/70 max-w-3xl mx-auto">
+              Join hundreds of sales teams already using KALM to close more deals
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
-            {features.map((feature, index) => (
-              <div key={index} className="group animate-fade-in" style={{ animationDelay: `${index * 0.15}s` }}>
-                <div className="bg-white rounded-3xl p-10 shadow-xl group-hover:shadow-2xl transition-all duration-300 transform group-hover:scale-105 border border-gray-100 h-full">
-                  <div className={`w-16 h-16 bg-gradient-to-r ${feature.color} rounded-2xl flex items-center justify-center mb-8 group-hover:scale-110 transition-transform duration-300`}>
-                    <feature.icon className="h-8 w-8 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-6">{feature.title}</h3>
-                  <p className="text-gray-600 text-lg leading-relaxed">{feature.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Benefits Section */}
-      <div className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div className="animate-fade-in">
-              <h2 className="text-5xl font-bold text-gray-900 mb-8">
-                Transform Your Sales Organization
-              </h2>
-              <p className="text-xl text-gray-600 mb-10 leading-relaxed">
-                Stop relying on gut feeling. Make data-driven decisions that actually improve your sales outcomes.
-              </p>
-              <div className="space-y-6">
-                {benefits.map((benefit, index) => (
-                  <div key={index} className="flex items-center animate-slide-up" style={{ animationDelay: `${index * 0.1}s` }}>
-                    <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center mr-4">
-                      <CheckIcon className="h-5 w-5 text-white font-bold" />
-                    </div>
-                    <span className="text-gray-700 text-lg font-medium">{benefit}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 rounded-3xl p-10 shadow-2xl animate-fade-in border border-blue-100">
-              <h3 className="text-3xl font-bold text-gray-900 mb-8">How It Works</h3>
-              <div className="space-y-8">
-                {[
-                  { step: '1', title: 'Upload Transcripts', desc: 'Upload call recordings or paste conversation text' },
-                  { step: '2', title: 'AI Analysis', desc: 'Get instant insights on sentiment, objections, and opportunities' },
-                  { step: '3', title: 'Take Action', desc: 'Generate follow-ups, get coaching tips, track performance' }
-                ].map((item, index) => (
-                  <div key={index} className="flex items-start animate-slide-up" style={{ animationDelay: `${index * 0.2}s` }}>
-                    <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl flex items-center justify-center text-lg font-bold mr-6 mt-1 shadow-lg">
-                      {item.step}
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-gray-900 text-lg mb-2">{item.title}</h4>
-                      <p className="text-gray-600">{item.desc}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Enhanced Testimonials */}
-      <div className="py-24 bg-gradient-to-br from-gray-50 to-blue-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-20 animate-fade-in">
-            <h2 className="text-5xl font-bold text-gray-900 mb-6">
-              What Our Customers Say
-            </h2>
-            <p className="text-xl text-gray-600">Real results from real sales teams</p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <div key={index} className="animate-fade-in" style={{ animationDelay: `${index * 0.15}s` }}>
-                <div className="bg-white rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border border-gray-100 h-full">
-                  <div className="flex mb-6">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <StarIcon key={i} className="h-5 w-5 text-yellow-400 fill-current" />
-                    ))}
+              <div key={testimonial.author} className="testimonial-card-kalm animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+                <div className="flex mb-4">
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <StarIcon key={i} className="h-5 w-5 text-yellow-400 fill-current" />
+                  ))}
+                </div>
+                <p className="text-kalm-text/80 mb-6 italic">"{testimonial.quote}"</p>
+                <div className="flex items-center">
+                  <div className="w-12 h-12 bg-gradient-to-br from-kalm-primary to-kalm-accent1 rounded-full flex items-center justify-center text-white font-bold mr-4">
+                    {testimonial.avatar}
                   </div>
-                  <p className="text-gray-700 mb-8 italic text-lg leading-relaxed">"{testimonial.quote}"</p>
-                  <div className="flex items-center">
-                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white font-bold mr-4">
-                      {testimonial.avatar}
-                    </div>
-                    <div>
-                      <p className="font-bold text-gray-900">{testimonial.author}</p>
-                      <p className="text-sm text-gray-500">{testimonial.title}</p>
-                    </div>
+                  <div>
+                    <div className="font-semibold text-kalm-secondary">{testimonial.author}</div>
+                    <div className="text-sm text-kalm-text/70">{testimonial.title}</div>
                   </div>
                 </div>
               </div>
             ))}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Enhanced CTA Section */}
-      <div className="py-24 bg-gradient-to-r from-blue-600 via-indigo-700 to-purple-800 relative overflow-hidden">
-        <div className="absolute inset-0 bg-black opacity-20"></div>
-        <div className="relative max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8 animate-fade-in">
-          <h2 className="text-5xl font-bold text-white mb-8">
+      {/* CTA Section */}
+      <section className="py-24 bg-gradient-to-br from-kalm-primary to-kalm-accent1">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-4xl md:text-5xl font-bold text-white mb-8">
             Ready to Transform Your Sales Team?
           </h2>
-          <p className="text-xl text-blue-100 mb-12">
-            Join hundreds of sales teams who are already using AI to improve their performance
+          <p className="text-xl text-blue-100 mb-12 max-w-2xl mx-auto">
+            Join hundreds of sales teams already using KALM to close more deals and scale their coaching.
           </p>
-          
-          <form onSubmit={handleEmailSignup} className="max-w-lg mx-auto mb-12">
-            <div className="flex gap-4">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                className="flex-1 px-6 py-4 rounded-xl border-0 focus:ring-4 focus:ring-yellow-400 text-lg shadow-xl"
-                required
-                disabled={loading}
-              />
-              <button
-                type="submit"
-                disabled={loading}
-                className="bg-gradient-to-r from-yellow-400 to-orange-400 text-blue-900 px-8 py-4 rounded-xl font-bold hover:from-yellow-300 hover:to-orange-300 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-xl transform hover:scale-105"
-              >
-                {loading ? 'Signing up...' : 'Get Started'}
-              </button>
-            </div>
-            {message && (
-              <p className={`mt-6 text-lg ${message.includes('🎉') ? 'text-green-200' : 'text-red-200'}`}>
-                {message}
-              </p>
-            )}
-          </form>
-          
-          <p className="text-blue-200 text-lg">
-            ✨ Free 14-day trial • No credit card required • Cancel anytime
-          </p>
+          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
+            <button
+              onClick={onGetStarted}
+              className="bg-white text-kalm-primary px-10 py-4 rounded-2xl font-semibold text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+            >
+              Start Free Trial
+            </button>
+            <button className="border-2 border-white text-white px-10 py-4 rounded-2xl font-semibold text-lg hover:bg-white hover:text-kalm-primary transition-all duration-300">
+              Book a Demo
+            </button>
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-kalm-secondary text-white py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div className="col-span-1 md:col-span-2">
+              <div className="flex items-center space-x-2 mb-6">
+                <div className="w-10 h-10 bg-gradient-to-br from-kalm-primary to-kalm-accent1 rounded-xl flex items-center justify-center">
+                  <SparklesIcon className="h-6 w-6 text-white" />
+                </div>
+                <span className="text-2xl font-bold">KALM</span>
+              </div>
+              <p className="text-gray-300 mb-6 max-w-md">
+                AI-powered sales intelligence that helps teams close more deals through intelligent conversation analysis and coaching.
+              </p>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-4">Product</h3>
+              <ul className="space-y-2 text-gray-300">
+                <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
+                <li><a href="#pricing" className="hover:text-white transition-colors">Pricing</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">API</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 className="font-semibold mb-4">Company</h3>
+              <ul className="space-y-2 text-gray-300">
+                <li><a href="#" className="hover:text-white transition-colors">About</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
+              </ul>
+            </div>
+          </div>
+          <div className="border-t border-gray-700 mt-12 pt-8 text-center text-gray-300">
+            <p>&copy; 2024 KALM. All rights reserved. | <a href="#" className="hover:text-white transition-colors">Privacy Policy</a> | <a href="#" className="hover:text-white transition-colors">Terms of Service</a></p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 } 
