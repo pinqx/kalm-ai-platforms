@@ -14,23 +14,38 @@
       sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background-color: #F9FAFB;
+    background-color: #FFFFFF;
     color: #111827;
+  }
+  
+  .hero-abstract-bg {
+    position: relative;
+    background: #fff;
+    overflow: hidden;
+  }
+  .hero-abstract-bg::before,
+  .hero-abstract-bg::after {
+    display: none;
   }
 }
 
 @layer components {
   /* KALM Brand Button Styles */
   .btn-kalm-primary {
-    @apply bg-kalm-primary text-white px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 hover:bg-kalm-accent1 shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-kalm-primary/20;
+    @apply bg-kalm-primary text-white px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue focus:outline-none focus:ring-4 focus:ring-kalm-primary/30;
+    box-shadow: 0 0 0 0 #1E40AF;
+  }
+  
+  .btn-kalm-primary:hover {
+    box-shadow: 0 0 16px 2px rgba(30, 64, 175, 0.3);
   }
   
   .btn-kalm-secondary {
-    @apply bg-kalm-surface text-kalm-text px-8 py-4 rounded-2xl font-semibold text-lg border-2 border-kalm-primary transition-all duration-300 hover:bg-kalm-primary hover:text-white shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-kalm-primary/20;
+    @apply bg-white text-kalm-primary px-8 py-4 rounded-2xl font-semibold text-lg border-2 border-kalm-primary transition-all duration-300 hover:bg-kalm-primary hover:text-white shadow-lg hover:shadow-blue focus:outline-none focus:ring-4 focus:ring-kalm-primary/30;
   }
   
   .btn-kalm-accent {
-    @apply bg-kalm-accent1 text-white px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 hover:bg-kalm-accent2 shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-kalm-accent1/20;
+    @apply bg-kalm-primary text-white px-8 py-4 rounded-2xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue focus:outline-none focus:ring-4 focus:ring-kalm-primary/20;
   }
   
   /* Legacy button styles for backward compatibility */
@@ -44,7 +59,7 @@
   
   /* KALM Card Styles */
   .card-kalm {
-    @apply bg-kalm-surface rounded-3xl shadow-xl border border-gray-200/50 transition-all duration-300 hover:shadow-2xl;
+    @apply bg-white rounded-3xl shadow-xl border border-gray-200 transition-all duration-300 hover:shadow-2xl;
   }
   
   .card-kalm-hover {
@@ -62,7 +77,7 @@
   
   /* KALM Gradient Text */
   .gradient-text-kalm {
-    @apply bg-gradient-to-r from-kalm-primary to-kalm-accent1 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-kalm-primary to-kalm-gold bg-clip-text text-transparent;
   }
   
   /* Legacy gradient text for backward compatibility */
@@ -72,7 +87,7 @@
   
   /* KALM Header Styles */
   .header-kalm {
-    @apply bg-kalm-surface/95 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-50;
+    @apply bg-white/95 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50;
   }
   
   /* KALM Hero Section */
@@ -82,12 +97,12 @@
   
   /* KALM Feature Card */
   .feature-card-kalm {
-    @apply bg-kalm-surface rounded-3xl p-8 shadow-xl border border-gray-200/50 transition-all duration-300 hover:shadow-2xl hover:scale-105;
+    @apply bg-white rounded-3xl p-8 shadow-xl border border-gray-200 transition-all duration-300 hover:shadow-2xl hover:scale-105;
   }
   
   /* KALM Testimonial Card */
   .testimonial-card-kalm {
-    @apply bg-kalm-surface rounded-3xl p-8 shadow-xl border border-gray-200/50 transition-all duration-300 hover:shadow-2xl;
+    @apply bg-white rounded-3xl p-8 shadow-xl border border-gray-200 transition-all duration-300 hover:shadow-2xl;
   }
   
   /* KALM Stats Card */
@@ -107,16 +122,34 @@
   .custom-scrollbar::-webkit-scrollbar-thumb {
     @apply bg-kalm-primary rounded-full hover:bg-kalm-accent1;
   }
+  
+  .dropdown-kalm {
+    @apply bg-white border border-gray-200 rounded-xl shadow-lg p-4 animate-fade-in;
+  }
+  
+  .section-title {
+    @apply text-3xl md:text-5xl font-extrabold uppercase tracking-tight text-kalm-text mb-4 relative;
+  }
+  .section-title .highlight {
+    @apply text-kalm-primary;
+  }
+  .section-title-underline {
+    @apply block w-16 h-1 bg-kalm-primary rounded-full mt-2 mb-6 mx-auto;
+  }
 }
 
 @layer utilities {
   /* Animation utilities */
   .animate-fade-in {
-    animation: fadeIn 0.5s ease-in-out;
+    animation: fadeIn 0.7s cubic-bezier(0.4,0,0.2,1);
+  }
+  
+  .animate-fade-in-up {
+    animation: fadeInUp 0.7s cubic-bezier(0.4,0,0.2,1) both;
   }
   
   .animate-slide-up {
-    animation: slideUp 0.8s ease-out forwards;
+    animation: slideUp 0.8s cubic-bezier(0.4,0,0.2,1) forwards;
   }
   
   .animate-bounce-gentle {
@@ -135,13 +168,13 @@
   /* Glass morphism effect */
   .glass {
     backdrop-filter: blur(10px);
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.1);
   }
   
   /* KALM Glow effects */
   .glow-kalm-primary {
-    box-shadow: 0 0 20px rgba(26, 115, 232, 0.3);
+    box-shadow: 0 0 20px rgba(30, 64, 175, 0.3);
   }
   
   .glow-kalm-accent1 {
@@ -208,33 +241,26 @@
   }
   
   .bg-grid {
-    background-image: linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
-                      linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+    background-image: linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
     background-size: 20px 20px;
+  }
+  
+  /* Animated dropdown */
+  .animate-dropdown {
+    animation: dropdownFade 0.3s cubic-bezier(0.4,0,0.2,1);
   }
 }
 
 /* Keyframes */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes bounceGentle {
@@ -282,10 +308,37 @@
   }
 }
 
+@keyframes dropdownFade {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromBottom {
+  0% {
+    opacity: 0;
+    transform: translateY(50px) scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
   .dark-mode {
-    background-color: #0F172A;
+    background-color: #111827;
     color: #F9FAFB;
   }
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   ChartBarIcon,
   EnvelopeIcon,
@@ -18,14 +18,43 @@ interface LandingPageProps {
   onGetStarted: () => void;
 }
 
-const NAV_LINKS = [
+const TOOLS_LINKS = [
   { label: 'Features', href: '#features' },
   { label: 'Pricing', href: '#pricing' },
   { label: 'Contact', href: '#contact' },
 ];
 
+// Add Intersection Observer for scroll animations
+function useScrollReveal() {
+  const revealRefs = useRef<(HTMLDivElement | null)[]>([]);
+  useEffect(() => {
+    const reveal = (el: HTMLDivElement | null) => {
+      if (el) {
+        el.classList.add('opacity-0', 'translate-y-8');
+      }
+    };
+    revealRefs.current.forEach(reveal);
+    const observer = new window.IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-fade-in-up');
+            entry.target.classList.remove('opacity-0', 'translate-y-8');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+    revealRefs.current.forEach((el) => el && observer.observe(el));
+    return () => observer.disconnect();
+  }, []);
+  return revealRefs;
+}
+
 export default function LandingPage({ onGetStarted }: LandingPageProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const revealRefs = useScrollReveal();
 
   const features = [
     {
@@ -46,8 +75,8 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
       icon: ChatBubbleLeftRightIcon,
       title: 'Sales Coaching Assistant',
       description: 'Chat with your AI coach to get strategic advice and objection handling tips.',
-      color: 'text-kalm-accent2',
-      bgColor: 'bg-kalm-accent2/10'
+      color: 'text-kalm-gold',
+      bgColor: 'bg-kalm-gold/10'
     },
     {
       icon: UserGroupIcon,
@@ -89,258 +118,144 @@ export default function LandingPage({ onGetStarted }: LandingPageProps) {
   ];
 
   return (
-    <div className="bg-kalm-background min-h-screen">
-      {/* Sticky Minimal Header */}
-      <header className="header-kalm shadow-sm sticky top-0 z-50 bg-white/90 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-20">
-          {/* Logo */}
-          <a href="#" className="flex items-center space-x-2">
-            <div className="w-9 h-9 bg-gradient-to-br from-kalm-primary to-kalm-accent1 rounded-xl flex items-center justify-center">
-              <SparklesIcon className="h-5 w-5 text-white" />
-            </div>
-            <span className="text-xl font-bold text-kalm-secondary tracking-tight">KALM</span>
-          </a>
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center space-x-8">
-            {NAV_LINKS.map(link => (
-              <a key={link.href} href={link.href} className="text-kalm-text hover:text-kalm-primary transition-colors duration-200 font-medium">
-                {link.label}
-              </a>
-            ))}
-            <button
-              onClick={onGetStarted}
-              className="btn-kalm-primary ml-4"
-            >
-              Start Free Trial
-            </button>
-          </nav>
-          {/* Mobile Hamburger */}
-          <button
-            className="md:hidden text-kalm-text hover:text-kalm-primary transition-colors duration-200"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            aria-label="Open menu"
-          >
-            {mobileMenuOpen ? <XMarkIcon className="h-7 w-7" /> : <Bars3Icon className="h-7 w-7" />}
-          </button>
-        </div>
-        {/* Mobile Dropdown */}
-        {mobileMenuOpen && (
-          <div className="md:hidden absolute left-0 right-0 bg-white border-t border-gray-100 shadow-lg animate-fade-in">
-            <nav className="flex flex-col px-6 py-6 space-y-4">
-              {NAV_LINKS.map(link => (
-                <a key={link.href} href={link.href} className="text-kalm-text hover:text-kalm-primary text-lg font-medium" onClick={() => setMobileMenuOpen(false)}>
-                  {link.label}
-                </a>
-              ))}
-              <button
-                onClick={() => { setMobileMenuOpen(false); onGetStarted(); }}
-                className="btn-kalm-primary w-full mt-2"
-              >
-                Start Free Trial
-              </button>
-            </nav>
-          </div>
-        )}
-      </header>
-
+    <div className="bg-white min-h-screen">
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-20 pb-24 md:pt-32 md:pb-32 bg-kalm-background">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-0 w-96 h-96 bg-kalm-primary/10 rounded-full blur-3xl" />
-          <div className="absolute top-0 right-0 w-96 h-96 bg-kalm-accent1/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-kalm-accent2/10 rounded-full blur-3xl" />
-        </div>
-        <div className="relative max-w-4xl mx-auto px-4 text-center animate-fade-in">
-          <h1 className="text-4xl md:text-6xl font-extrabold text-kalm-secondary mb-6 leading-tight">
-            AI-Powered Sales Support That <span className="gradient-text-kalm">Closes Deals</span>
-          </h1>
-          <p className="text-xl md:text-2xl text-kalm-text/70 mb-10 max-w-2xl mx-auto">
-            Transform every sales conversation into actionable insights. Boost performance, close more deals, and scale coaching across your entire team.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <button
-              onClick={onGetStarted}
-              className="btn-kalm-primary text-lg px-8 py-4"
-            >
-              Start Free Trial
-            </button>
-          </div>
-        </div>
+      <section className="relative pt-24 pb-20 md:pt-36 md:pb-32 text-center max-w-3xl mx-auto px-4">
+        <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-6 leading-tight">
+          AI Sales Intelligence for <span className="text-blue-600">Modern Teams</span>
+        </h1>
+        <p className="text-xl md:text-2xl text-gray-600 mb-10">
+          Instantly analyze sales calls, <span className="text-blue-600 font-semibold">coach reps</span>, and close more deals with <span className="text-blue-600 font-semibold">AI-powered insights</span>.
+        </p>
+        <button
+          onClick={onGetStarted}
+          className="inline-block bg-blue-700 hover:bg-blue-800 text-white text-lg font-semibold px-10 py-4 rounded-2xl shadow-lg transition-all duration-300"
+        >
+          Start Free Trial
+        </button>
       </section>
 
-      {/* Social Proof */}
-      <section className="bg-kalm-surface py-12 border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4">
-          <p className="text-center text-kalm-text/60 text-lg mb-8 font-medium">
-            Trusted by sales teams at innovative companies worldwide
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center justify-center">
-            {['TechCorp', 'GrowthCo', 'ScaleUp Inc', 'InnovateSales'].map((company, index) => (
-              <div key={company} className="text-center animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                <div className="card-kalm p-6">
-                  <p className="text-kalm-text font-bold text-lg">{company}</p>
-                  <div className="flex justify-center mt-2">
-                    {[...Array(5)].map((_, i) => (
-                      <StarIcon key={i} className="h-4 w-4 text-yellow-400 fill-current" />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Trust Bar - REMOVED */}
 
-      {/* Features Section */}
-      <section id="features" className="py-24 bg-kalm-background">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-16 animate-fade-in">
-            <h2 className="text-3xl md:text-5xl font-bold text-kalm-secondary mb-4">
-              Everything You Need to Scale Sales
-            </h2>
-            <p className="text-xl text-kalm-text/70 max-w-3xl mx-auto">
-              Powerful AI tools designed specifically for modern sales teams
-            </p>
-          </div>
+      {/* How It Works */}
+      <section className="py-24 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4">
+          <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-12 text-center">How It Works</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => (
-              <div key={feature.title} className="feature-card-kalm animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                <div className={`w-14 h-14 ${feature.bgColor} rounded-2xl flex items-center justify-center mb-6`}>
-                  <feature.icon className={`h-7 w-7 ${feature.color}`} />
-                </div>
-                <h3 className="text-lg font-bold text-kalm-secondary mb-2">{feature.title}</h3>
-                <p className="text-kalm-text/70 leading-relaxed text-base">{feature.description}</p>
+            {[
+              {
+                step: "01",
+                title: "Upload Call",
+                description: "Simply upload your sales call recordings or transcripts",
+                icon: "📁",
+                delay: "0s"
+              },
+              {
+                step: "02", 
+                title: "AI Analysis",
+                description: "Our AI analyzes every conversation for key insights",
+                icon: "🤖",
+                delay: "0.2s"
+              },
+              {
+                step: "03",
+                title: "Get Insights", 
+                description: "Receive detailed reports on performance and opportunities",
+                icon: "📊",
+                delay: "0.4s"
+              },
+              {
+                step: "04",
+                title: "Coach & Improve",
+                description: "Use insights to coach your team and close more deals",
+                icon: "🎯",
+                delay: "0.6s"
+              }
+            ].map((item, i) => (
+              <div
+                key={item.step}
+                ref={(el: HTMLDivElement | null) => (revealRefs.current[features.length + testimonials.length + i] = el)}
+                className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 text-center transition-all duration-700 relative transform hover:scale-105 hover:shadow-2xl"
+                style={{
+                  animationDelay: item.delay,
+                  animation: 'slideInFromBottom 0.8s ease-out forwards'
+                }}
+              >
+                <div className="text-4xl mb-4 transform hover:scale-110 transition-transform duration-300">{item.icon}</div>
+                <div className="text-sm font-bold text-blue-600 mb-2">{item.step}</div>
+                <h3 className="text-lg font-bold text-gray-900 mb-3">{item.title}</h3>
+                <p className="text-gray-600 leading-relaxed text-sm">{item.description}</p>
+                {i < 3 && (
+                  <div className="hidden lg:block absolute top-1/2 -right-4 transform -translate-y-1/2 text-blue-400 text-2xl animate-pulse">
+                    →
+                  </div>
+                )}
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Results Section */}
-      <section className="py-24 bg-kalm-surface">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-16 animate-fade-in">
-            <h2 className="text-3xl md:text-5xl font-bold text-kalm-secondary mb-4">
-              Proven Results That Drive Revenue
-            </h2>
-            <p className="text-xl text-kalm-text/70 max-w-3xl mx-auto">
-              Our customers see measurable improvements in sales performance within 30 days
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {stats.map((stat, index) => (
-              <div key={stat.label} className="stats-card-kalm animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
-                <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mb-6">
-                  <stat.icon className="h-7 w-7 text-white" />
+      {/* Features */}
+      <section className="py-24 bg-white">
+        <div className="max-w-6xl mx-auto px-4">
+          <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-12 text-center">Features</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+            {features.map((feature, i) => (
+              <div
+                key={feature.title}
+                ref={(el: HTMLDivElement | null) => (revealRefs.current[i] = el)}
+                className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 text-center transition-all duration-700"
+              >
+                <div className={`w-14 h-14 mx-auto mb-6 flex items-center justify-center rounded-2xl bg-blue-50`}>
+                  <feature.icon className="h-7 w-7 text-blue-700" />
                 </div>
-                <div className="text-3xl font-bold mb-2">{stat.number}</div>
-                <div className="text-white/90">{stat.label}</div>
+                <h3 className="text-lg font-bold text-gray-900 mb-2">{feature.title}</h3>
+                <p className="text-gray-600 leading-relaxed text-base">{feature.description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="py-24 bg-kalm-background">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-16 animate-fade-in">
-            <h2 className="text-3xl md:text-5xl font-bold text-kalm-secondary mb-4">
-              What Our Customers Say
-            </h2>
-            <p className="text-xl text-kalm-text/70 max-w-3xl mx-auto">
-              Join hundreds of sales teams already using KALM to close more deals
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <div key={testimonial.author} className="testimonial-card-kalm animate-fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
+      {/* Testimonials */}
+      <section className="py-24 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4">
+          <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-12 text-center">What Our Customers Say</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+            {testimonials.map((testimonial, i) => (
+              <div
+                key={testimonial.author}
+                ref={(el: HTMLDivElement | null) => (revealRefs.current[features.length + i] = el)}
+                className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 transition-all duration-700"
+              >
                 <div className="flex mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <StarIcon key={i} className="h-5 w-5 text-yellow-400 fill-current" />
+                  {[...Array(testimonial.rating)].map((_, j) => (
+                    <StarIcon key={j} className="h-5 w-5 text-blue-400 fill-current" />
                   ))}
                 </div>
-                <p className="text-kalm-text/80 mb-6 italic">"{testimonial.quote}"</p>
+                <blockquote className="text-gray-900 mb-6 italic">
+                  "{testimonial.quote}"
+                </blockquote>
                 <div className="flex items-center">
-                  <div className="w-12 h-12 bg-gradient-to-br from-kalm-primary to-kalm-accent1 rounded-full flex items-center justify-center text-white font-bold mr-4">
+                  <div className="w-12 h-12 bg-blue-700 rounded-full flex items-center justify-center text-white font-bold mr-4">
                     {testimonial.avatar}
                   </div>
                   <div>
-                    <div className="font-semibold text-kalm-secondary">{testimonial.author}</div>
-                    <div className="text-sm text-kalm-text/70">{testimonial.title}</div>
+                    <div className="font-semibold text-gray-900">{testimonial.author}</div>
+                    <div className="text-gray-500 text-sm">{testimonial.title}</div>
                   </div>
                 </div>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Pricing Section (imported) */}
-      <section id="pricing" className="py-24 bg-kalm-surface border-t border-gray-100">
-        <div className="max-w-7xl mx-auto px-4">
-          {/* PricingPage component should be rendered here in the main App, not duplicated */}
-          <div className="text-center mb-16 animate-fade-in">
-            <h2 className="text-3xl md:text-5xl font-bold text-kalm-secondary mb-4">
-              Simple, Transparent Pricing
-            </h2>
-            <p className="text-xl text-kalm-text/70 max-w-3xl mx-auto">
-              Choose the perfect plan for your sales team. All plans include a 14-day free trial with no credit card required.
-            </p>
-          </div>
-          {/* You can import and render <PricingPage /> here, or keep a summary and link to full pricing */}
-          <div className="flex justify-center">
-            <button
-              onClick={onGetStarted}
-              className="btn-kalm-primary text-lg px-8 py-4"
-            >
-              Start Free Trial
-            </button>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-24 bg-gradient-to-br from-kalm-primary to-kalm-accent1">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-5xl font-bold text-white mb-8">
-            Ready to Transform Your Sales Team?
-          </h2>
-          <p className="text-xl text-blue-100 mb-12 max-w-2xl mx-auto">
-            Join hundreds of sales teams already using KALM to close more deals and scale their coaching.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <button
-              onClick={onGetStarted}
-              className="bg-white text-kalm-primary px-10 py-4 rounded-2xl font-semibold text-lg hover:bg-gray-100 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
-            >
-              Start Free Trial
-            </button>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-kalm-secondary text-white py-12 mt-12">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-8">
-            <div className="flex items-center space-x-2 mb-6 md:mb-0">
-              <div className="w-9 h-9 bg-gradient-to-br from-kalm-primary to-kalm-accent1 rounded-xl flex items-center justify-center">
-                <SparklesIcon className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-xl font-bold">KALM</span>
-            </div>
-            <div className="flex flex-col md:flex-row md:space-x-8 text-gray-300 text-sm">
-              <a href="#features" className="hover:text-white transition-colors mb-2 md:mb-0">Features</a>
-              <a href="#pricing" className="hover:text-white transition-colors mb-2 md:mb-0">Pricing</a>
-              <a href="#contact" className="hover:text-white transition-colors">Contact</a>
-              <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
-            </div>
-          </div>
-          <div className="border-t border-gray-700 mt-8 pt-6 text-center text-gray-400 text-xs">
-            &copy; 2024 KALM. All rights reserved.
-          </div>
+      <footer className="bg-white border-t border-gray-100 py-10 text-center text-gray-400 text-sm">
+        <div className="max-w-6xl mx-auto px-4">
+          &copy; {new Date().getFullYear()} KALM. All rights reserved.
         </div>
       </footer>
     </div>

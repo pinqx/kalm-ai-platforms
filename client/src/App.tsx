@@ -229,31 +229,19 @@ function App() {
       {/* Enhanced Header with gradient and better styling */}
       <header className="bg-white/80 backdrop-blur-md shadow-lg border-b border-gray-200/50 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-18">
+          <div className="flex items-center justify-between h-20">
             <div className="flex items-center group">
-              <div className="relative">
-                <SparklesIcon className="h-10 w-10 text-blue-600 mr-4 transform group-hover:scale-110 transition-transform duration-200" />
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
-              </div>
               <button 
                 onClick={() => setActiveTab('home')}
-                className="flex flex-col hover:opacity-80 transition-opacity duration-200"
+                className="hover:opacity-80 transition-opacity duration-200"
               >
-                <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                <h1 className="text-3xl font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent tracking-tight">
                   KALM
                 </h1>
-                <div className="flex items-center">
-                  <span className="text-xs text-gray-500 mr-2">AI Sales Intelligence</span>
-                  <span className="px-2 py-0.5 text-xs bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-full font-semibold">
-                    Pro
-                  </span>
-                </div>
               </button>
             </div>
             
             <div className="flex items-center space-x-6">
-              {getStatusIndicator()}
-              
               {user ? (
                 <div className="flex items-center space-x-4">
                   <div className="text-right">

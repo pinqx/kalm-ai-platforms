@@ -36,15 +36,29 @@ export default {
         },
       },
       colors: {
-        // KALM Brand Color Palette
+        // KALM Brand Color Palette - Clean White Theme
+        'kalm-primary': '#1E40AF',      // Dark Blue
+        'kalm-secondary': '#1F2937',    // Dark Gray
+        'kalm-accent1': '#6366F1',      // Indigo
+        'kalm-accent2': '#10B981',      // Emerald
+        'kalm-background': '#FFFFFF',   // Crisp White
+        'kalm-surface': '#F9FAFB',      // Light Gray Surface
+        'kalm-gold': '#D97706',         // Darker Gold
+        'kalm-dark': '#111827',         // Very Dark Gray (for text)
+        'kalm-text': '#111827',         // Black text
+        'kalm-text-light': '#6B7280',   // Gray text
+        // Legacy kalm object for backward compatibility
         kalm: {
-          primary: '#1A73E8',      // Google Blue - Primary CTA buttons
-          secondary: '#0F172A',    // Slate-900 - Headers, text
-          accent1: '#6366F1',      // Indigo-500 - Hover states, badges
-          accent2: '#10B981',      // Emerald-500 - Success messages, highlights
-          background: '#F9FAFB',   // Gray-50 - Clean background
-          surface: '#FFFFFF',      // White - Card backgrounds
-          text: '#111827',         // Gray-900 - Readable dark text
+          primary: '#1E40AF',
+          secondary: '#1F2937',
+          accent1: '#6366F1',
+          accent2: '#10B981',
+          background: '#FFFFFF',
+          surface: '#F9FAFB',
+          gold: '#D97706',
+          dark: '#111827',
+          text: '#111827',
+          'text-light': '#6B7280',
         },
         primary: {
           50: '#eff6ff',
@@ -58,6 +72,13 @@ export default {
           800: '#1e40af',
           900: '#1e3a8a',
         },
+      },
+      boxShadow: {
+        'gold': '0 4px 24px 0 rgba(217, 119, 6, 0.2)',
+        'gold-lg': '0 8px 32px 0 rgba(217, 119, 6, 0.3)',
+        'gold-xl': '0 12px 48px 0 rgba(217, 119, 6, 0.4)',
+        'blue': '0 4px 24px 0 rgba(30, 64, 175, 0.2)',
+        'blue-lg': '0 8px 32px 0 rgba(30, 64, 175, 0.3)',
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
@@ -130,18 +151,34 @@ export default {
     'bg-kalm-accent2',
     'bg-kalm-background',
     'bg-kalm-surface',
+    'bg-kalm-gold',
+    'bg-kalm-dark',
     'text-kalm-primary',
     'text-kalm-secondary',
     'text-kalm-accent1',
     'text-kalm-accent2',
     'text-kalm-text',
+    'text-kalm-text-light',
+    'text-kalm-gold',
+    'text-kalm-dark',
     'border-kalm-primary',
     'border-kalm-secondary',
     'border-kalm-accent1',
     'border-kalm-accent2',
+    'border-kalm-gold',
     'hover:bg-kalm-primary',
     'hover:bg-kalm-accent1',
     'hover:text-kalm-primary',
     'hover:border-kalm-primary',
+    'hover:shadow-gold',
+    'hover:shadow-gold-lg',
+    'hover:shadow-gold-xl',
+    'hover:shadow-blue',
+    'hover:shadow-blue-lg',
+    'shadow-gold',
+    'shadow-gold-lg',
+    'shadow-gold-xl',
+    'shadow-blue',
+    'shadow-blue-lg',
   ]
 } 
