@@ -98,6 +98,28 @@ function App() {
     }
   }, [activeTab, user]);
 
+  // Keyboard shortcut for admin login (Ctrl+Shift+A or Cmd+Shift+A)
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'A') {
+        e.preventDefault();
+        setShowAdminLogin(true);
+        console.log('🔐 Admin login triggered via keyboard shortcut');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, []);
+
+  // Check URL hash for admin login
+  useEffect(() => {
+    if (window.location.hash === '#admin-login') {
+      setShowAdminLogin(true);
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, []);
+
   const handleAuth = (userData: any, authToken: string) => {
     console.log('🔐 handleAuth called with user:', userData);
     
