@@ -45,13 +45,31 @@ const errorHandler = (error, req, res, next) => {
 
   // File upload errors
   if (error.code === 'LIMIT_FILE_SIZE') {
-    const message = 'File too large. Maximum size is 10MB';
+    const message = 'File too large. Maximum size is 25MB';
     err = { statusCode: 400, message };
   }
+  
+  // Multer errors
+  if (error.code === 'LIMIT_UNEXPECTED_FILE') {
+    const message = 'Unexpected file field. Expected field name: "transcript"';
+    err = { statusCode: 400, message };
+  }
+  
+  if (error.message && error.message.includes('Invalid file type')) {
+    err = { statusCode: 400, message: error.message };
+  }
+
+  console.error('🔴 Error handler triggered:', {
+    statusCode: err.statusCode || 500,
+    message: err.message || error.message,
+    code: error.code,
+    name: error.name
+  });
 
   res.status(err.statusCode || 500).json({
     success: false,
-    error: err.message || 'Server Error',
+    error: err.message || error.message || 'Server Error',
+    code: error.code || 'UNKNOWN_ERROR',
     ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
   });
 };

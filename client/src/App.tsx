@@ -14,6 +14,9 @@ import PaymentTester from './components/PaymentTester'
 import AdminDashboard from './components/AdminDashboard'
 import UsageDashboard from './components/UsageDashboard'
 import AdminLogin from './components/AdminLogin'
+import PrivacyPolicy from './components/PrivacyPolicy'
+import TermsOfService from './components/TermsOfService'
+import Footer from './components/Footer'
 import { 
   DocumentTextIcon, 
   EnvelopeIcon, 
@@ -53,7 +56,7 @@ interface TranscriptAnalysis {
   transcriptionConfidence?: number;
 }
 
-type ActiveTab = 'home' | 'upload' | 'email' | 'chat' | 'dashboard' | 'history' | 'pricing' | 'realtime' | 'collaboration' | 'advanced-analytics' | 'admin' | 'usage';
+type ActiveTab = 'home' | 'upload' | 'email' | 'chat' | 'dashboard' | 'history' | 'pricing' | 'realtime' | 'collaboration' | 'advanced-analytics' | 'admin' | 'usage' | 'privacy' | 'terms';
 
 function App() {
   const [analysis, setAnalysis] = useState<TranscriptAnalysis | null>(null);
@@ -65,6 +68,7 @@ function App() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisProgress, setAnalysisProgress] = useState(0);
   const [analysisStage, setAnalysisStage] = useState('');
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<any>(null);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
 
@@ -133,31 +137,157 @@ function App() {
   };
 
   const handleAnalyze = async (formData: FormData) => {
+    // Check if user is authenticated
+    if (!token && !user) {
+      console.warn('⚠️ No authentication - prompting user to sign in');
+      setAnalysisError('Please sign in to analyze transcripts');
+      setShowAuthModal(true);
+      return;
+    }
+    
+    if (!token) {
+      console.warn('⚠️ No token available, using demo-token (may fail)');
+    }
+
     setIsAnalyzing(true);
     setAnalysisProgress(0);
     setAnalysisStage('Uploading file...');
+    setAnalysisError(null);
     
     try {
+      // Log FormData contents for debugging
+      console.log('📤 Starting analysis request...', { 
+        hasToken: !!token, 
+        hasUser: !!user,
+        tokenLength: token?.length || 0,
+        apiUrl: getApiUrl()
+      });
+      
+      // Log FormData entries
+      for (const [key, value] of formData.entries()) {
+        if (value instanceof File) {
+          console.log(`FormData entry: ${key} = File(${value.name}, ${value.size} bytes, ${value.type})`);
+        } else {
+          console.log(`FormData entry: ${key} = ${value}`);
+        }
+      }
+      
       const response = await fetch(`${getApiUrl()}/api/analyze-transcript`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token || 'demo-token'}`,
+          // Don't set Content-Type - let browser set it with boundary for FormData
         },
         body: formData,
       });
 
+      console.log('📥 Analysis response received:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+
       if (response.ok) {
         const result = await response.json();
-        setAnalysis(result);
+        console.log('✅ Analysis successful:', result);
+        
+        // Validate that we got analysis results, not file content
+        if (typeof result === 'string' || (!result.summary && !result.objections && !result.actionItems)) {
+          console.error('❌ Invalid analysis response - received file content instead of analysis');
+          setAnalysisError('Server returned file content instead of analysis. Please try again.');
+          setAnalysisStage('Analysis failed');
+          return;
+        }
+        
+        // Ensure analysis has required fields
+        const analysisResult = {
+          summary: result.summary || 'Analysis completed',
+          objections: result.objections || [],
+          actionItems: result.actionItems || [],
+          sentiment: result.sentiment || 'neutral',
+          confidence: result.confidence || 75,
+          keyTopics: result.keyTopics || [],
+          participantCount: result.participantCount || 2,
+          ...result // Include any additional fields
+        };
+        
+        console.log('✅ Validated analysis result:', analysisResult);
+        setAnalysis(analysisResult);
         setAnalysisStage('Analysis complete');
         setAnalysisProgress(100);
+        setAnalysisError(null);
       } else {
-        console.error('Analysis failed');
+        let errorData: any = { error: 'Unknown error occurred' };
+        let errorText = '';
+        
+        try {
+          // Try to get the response as text first
+          errorText = await response.text();
+          console.log('❌ Error response body (raw):', errorText);
+          console.log('❌ Error response length:', errorText.length);
+          
+          if (errorText && errorText.trim().length > 0) {
+            try {
+              errorData = JSON.parse(errorText);
+              console.log('❌ Error response (parsed):', errorData);
+            } catch (parseError) {
+              // If it's not JSON, use the text as the error message
+              console.log('❌ Response is not JSON, using as plain text');
+              errorData = { error: errorText };
+            }
+          } else {
+            // Empty response body
+            console.warn('⚠️ Empty error response body');
+            errorData = { 
+              error: `Server returned ${response.status} ${response.statusText} with no error message`,
+              code: 'EMPTY_RESPONSE'
+            };
+          }
+        } catch (readError) {
+          console.error('❌ Failed to read error response:', readError);
+          errorData = { 
+            error: `Server error: ${response.status} ${response.statusText}. Could not read error details.`,
+            code: 'READ_ERROR'
+          };
+        }
+        
+        const errorMessage = errorData.error || errorData.message || `Analysis failed with status ${response.status}`;
+        const errorCode = errorData.code || 'UNKNOWN_ERROR';
+        
+        console.error('❌ Analysis failed:', {
+          status: response.status,
+          error: errorMessage,
+          code: errorCode,
+          fullError: errorData
+        });
         setAnalysisStage('Analysis failed');
+        
+        // Provide more helpful error messages based on error code
+        let userFriendlyMessage = errorMessage;
+        if (errorCode === 'NO_FILE_RECEIVED') {
+          userFriendlyMessage = 'No file was received by the server. Please try selecting the file again.';
+        } else if (errorCode === 'INVALID_FILE_TYPE') {
+          userFriendlyMessage = 'Invalid file type. Please upload a TXT, PDF, DOC, DOCX, or audio file.';
+        } else if (errorCode === 'FILE_TOO_LARGE') {
+          userFriendlyMessage = 'File is too large. Maximum size is 25MB.';
+        } else if (errorCode === 'INVALID_FIELD_NAME') {
+          userFriendlyMessage = 'File upload error. Please try again.';
+        }
+        
+        setAnalysisError(userFriendlyMessage);
+        
+        // If authentication failed, prompt user to sign in
+        if (response.status === 401 || response.status === 403) {
+          setAnalysisError(`${userFriendlyMessage} Please sign in and try again.`);
+          setShowAuthModal(true);
+        }
       }
-    } catch (error) {
-      console.error('Analysis error:', error);
+    } catch (error: any) {
+      console.error('💥 Analysis network error:', error);
+      const errorMessage = error?.message || 'Failed to connect to server. Please check your connection and try again.';
       setAnalysisStage('Analysis failed');
+      setAnalysisError(errorMessage);
     } finally {
       setIsAnalyzing(false);
     }
@@ -379,6 +509,7 @@ function App() {
                   progress={analysisProgress}
                   stage={analysisStage}
                   analysis={analysis}
+                  error={analysisError}
                   onNavigateToEmail={() => setActiveTab('email')}
                   onNavigateToChat={() => setActiveTab('chat')}
                   onNavigateToAnalytics={() => setActiveTab('dashboard')}
@@ -584,9 +715,24 @@ function App() {
                 <UsageDashboard />
               </div>
             )}
+
+            {activeTab === 'privacy' && (
+              <div className="animate-fade-in">
+                <PrivacyPolicy />
+              </div>
+            )}
+
+            {activeTab === 'terms' && (
+              <div className="animate-fade-in">
+                <TermsOfService />
+              </div>
+            )}
           </div>
         </main>
       )}
+
+      {/* Footer - Show on all pages except admin */}
+      {activeTab !== 'admin' && <Footer />}
 
       {/* Authentication Modal */}
       <AuthModal

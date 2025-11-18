@@ -1,4 +1,19 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://yourdomain.com/sitemap.xml 
+# Sitemap
+Sitemap: https://kalm.live/sitemap.xml
+
+# Disallow admin and API routes
+Disallow: /api/
+Disallow: /admin/
+Disallow: /uploads/
+Disallow: /_next/
+Disallow: /static/
+
+# Allow important pages
+Allow: /privacy
+Allow: /terms
+Allow: /pricing
+Allow: /login
+Allow: /register 

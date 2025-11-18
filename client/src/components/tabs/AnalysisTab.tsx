@@ -28,6 +28,7 @@ interface AnalysisTabProps {
   progress: number;
   stage: string;
   analysis: Analysis | null;
+  error?: string | null;
   onNavigateToEmail?: () => void;
   onNavigateToChat?: () => void;
   onNavigateToAnalytics?: () => void;
@@ -39,6 +40,7 @@ const AnalysisTab: React.FC<AnalysisTabProps> = ({
   progress,
   stage,
   analysis,
+  error: propError,
   onNavigateToEmail,
   onNavigateToChat,
   onNavigateToAnalytics
@@ -46,8 +48,11 @@ const AnalysisTab: React.FC<AnalysisTabProps> = ({
   const [uploadMode, setUploadMode] = useState<'text' | 'audio'>('text');
   const [file, setFile] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Use prop error if available, otherwise use local error
+  const error = propError || localError;
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -67,26 +72,41 @@ const AnalysisTab: React.FC<AnalysisTabProps> = ({
     const files = e.dataTransfer.files;
     if (files && files[0]) {
       setFile(files[0]);
-      setError(null);
+      setLocalError(null);
     }
   };
 
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setFile(e.target.files[0]);
-      setError(null);
+      setLocalError(null);
     }
   };
 
   const handleFileUpload = (selectedFile: File) => {
     setFile(selectedFile);
+    setLocalError(null);
     const formData = new FormData();
-    formData.append('transcript', selectedFile);
+    // Ensure the field name matches what the server expects: 'transcript'
+    formData.append('transcript', selectedFile, selectedFile.name);
+    console.log('📤 Uploading file:', {
+      name: selectedFile.name,
+      size: selectedFile.size,
+      type: selectedFile.type,
+      fieldName: 'transcript'
+    });
+    console.log('📤 FormData entries:', Array.from(formData.entries()).map(([k, v]) => 
+      [k, v instanceof File ? `File(${v.name})` : v]
+    ));
     onAnalyze(formData);
   };
 
   const handleTextFileUpload = () => {
-    if (!file) return;
+    if (!file) {
+      setLocalError('Please select a file first');
+      return;
+    }
+    console.log('Analyze button clicked, file:', file.name);
     handleFileUpload(file);
   };
 
@@ -219,8 +239,13 @@ const AnalysisTab: React.FC<AnalysisTabProps> = ({
                       </div>
                     </div>
                     <button
-                      onClick={handleTextFileUpload}
-                      disabled={isAnalyzing}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('🔘 Analyze button clicked', { hasFile: !!file, fileName: file?.name });
+                        handleTextFileUpload();
+                      }}
+                      disabled={isAnalyzing || !file}
                       className="px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl hover:from-green-700 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center"
                     >
                       {isAnalyzing ? (

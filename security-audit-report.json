@@ -1,0 +1,122 @@
+{
+  "timestamp": "2025-07-01T19:35:07.202Z",
+  "issues": [],
+  "warnings": [],
+  "passed": [
+    {
+      "timestamp": "2025-07-01T19:35:07.174Z",
+      "level": "PASS",
+      "message": "Environment variable present: JWT_SECRET",
+      "details": null
+    },
+    {
+      "timestamp": "2025-07-01T19:35:07.176Z",
+      "level": "PASS",
+      "message": "Environment variable present: MONGODB_URI",
+      "details": null
+    },
+    {
+      "timestamp": "2025-07-01T19:35:07.177Z",
+      "level": "PASS",
+      "message": "Environment variable present: OPENAI_API_KEY",
+      "details": null
+    },
+    {
+      "timestamp": "2025-07-01T19:35:07.177Z",
+      "level": "PASS",
+      "message": "Environment variable present: STRIPE_SECRET_KEY",
+      "details": null
+    },
+    {
+      "timestamp": "2025-07-01T19:35:07.177Z",
+      "level": "PASS",
+      "message": "Secure JWT_SECRET configured",
+      "details": null
+    },
+    {
+      "timestamp": "2025-07-01T19:35:07.179Z",
+      "level": "PASS",
+      "message": "Secure OPENAI_API_KEY configured",
+      "details": null
+    },
+    {
+      "timestamp": "2025-07-01T19:35:07.179Z",
+      "level": "PASS",
+      "message": "Secure STRIPE_SECRET_KEY configured",
+      "details": null
+    },
+    {
+      "timestamp": "2025-07-01T19:35:07.180Z",
+      "level": "PASS",
+      "message": "Secure STRIPE_WEBHOOK_SECRET configured",
+      "details": null
+    },
+    {
+      "timestamp": "2025-07-01T19:35:07.180Z",
+      "level": "PASS",
+      "message": "Secure file permissions for server/.env: 100644",
+      "details": null
+    },
+    {
+      "timestamp": "2025-07-01T19:35:07.200Z",
+      "level": "PASS",
+      "message": "Dependencies checked for package.json",
+      "details": null
+    },
+    {
+      "timestamp": "2025-07-01T19:35:07.200Z",
+      "level": "PASS",
+      "message": "Dependencies checked for client/package.json",
+      "details": null
+    },
+    {
+      "timestamp": "2025-07-01T19:35:07.201Z",
+      "level": "PASS",
+      "message": "CORS is properly configured with specific origins",
+      "details": null
+    },
+    {
+      "timestamp": "2025-07-01T19:35:07.201Z",
+      "level": "PASS",
+      "message": "Rate limiting is configured",
+      "details": null
+    },
+    {
+      "timestamp": "2025-07-01T19:35:07.201Z",
+      "level": "PASS",
+      "message": "Authentication rate limiting is configured",
+      "details": null
+    },
+    {
+      "timestamp": "2025-07-01T19:35:07.201Z",
+      "level": "PASS",
+      "message": "Input validation/sanitization is configured",
+      "details": null
+    },
+    {
+      "timestamp": "2025-07-01T19:35:07.201Z",
+      "level": "PASS",
+      "message": "HSTS header is configured",
+      "details": null
+    },
+    {
+      "timestamp": "2025-07-01T19:35:07.201Z",
+      "level": "PASS",
+      "message": "Using Mongoose ODM (protects against SQL injection)",
+      "details": null
+    },
+    {
+      "timestamp": "2025-07-01T19:35:07.201Z",
+      "level": "PASS",
+      "message": "XSS protection headers are configured",
+      "details": null
+    },
+    {
+      "timestamp": "2025-07-01T19:35:07.201Z",
+      "level": "PASS",
+      "message": "Input sanitization is configured",
+      "details": null
+    }
+  ],
+  "securityScore": 100
+}

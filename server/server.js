@@ -81,7 +81,8 @@ const {
   paymentLimiter,
   securityHeaders, 
   sanitizeInput, 
-  fileUploadSecurity 
+  fileUploadSecurity,
+  corsOptions
 } = require('./middleware/security');
 const { logger, logError, logAuth, logAI, logDB, logSocket } = require('./utils/logger');
 const { checkTranscriptLimits, checkFeatureAccess, getUserUsageStats, PLAN_LIMITS } = require('./middleware/usageLimits');
@@ -336,11 +337,13 @@ app.use(requestLogger); // Request logging
 app.use(performanceMonitor); // Performance monitoring
 
 // Rate limiting with enhanced rules - specific routes first, then general
+// Apply specific limiters to exact paths to prevent double counting
 app.use('/api/auth', authLimiter); // Stricter auth limits
 app.use('/api/analyze-transcript', uploadLimiter); // Upload limits
 app.use('/api/generate-email', aiLimiter); // AI endpoint limits
 app.use('/api/chat', aiLimiter); // AI endpoint limits
 app.use('/api/payment', paymentLimiter); // Payment limits
+
 // Apply general API limiter only to routes not covered by specific limiters
 app.use('/api', (req, res, next) => {
   // Skip if this route already has a specific limiter
@@ -356,31 +359,7 @@ app.use('/api', (req, res, next) => {
   return apiLimiter(req, res, next);
 });
 
-// CORS configuration
-const corsOptions = {
-  origin: [
-    'http://localhost:5173',  // Primary frontend port
-    'http://localhost:5174', 
-    'http://localhost:5175',
-    'http://localhost:3000',  // Next.js default
-    'http://localhost:3001',  // Alternative port
-    'https://kalm-ai-platforms.vercel.app',  // Current Vercel deployment
-    'https://kalm-ai-platforms-git-main-alexs-projects-669e350e.vercel.app',  // Vercel preview
-    'https://kalm.live',      // Custom domain - LIVE!
-    'https://www.kalm.live',  // WWW subdomain
-    process.env.FRONTEND_URL,
-    'https://*.vercel.app',   // Allow all Vercel apps
-    /^https:\/\/.*\.vercel\.app$/,  // Regex for Vercel domains
-    // Add your custom domain here when configured
-    // 'https://yourdomain.com',
-    // 'https://app.yourdomain.com',
-  ].filter(Boolean), // Remove undefined values
-  credentials: true,
-  optionsSuccessStatus: 200,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
-  exposedHeaders: ['Authorization']
-};
+// Use enhanced CORS configuration from security middleware
 app.use(cors(corsOptions));
 
 // Body parsing middleware
@@ -887,14 +866,110 @@ app.post('/api/analyze-transcript', authenticateToken, async (req, res) => {
 });
 
 // Enhanced transcript analysis with audio transcription support
-app.post('/api/analyze-transcript', authenticateToken, checkTranscriptLimits, upload.single('transcript'), asyncHandler(async (req, res) => {
-    console.log('Transcript analysis called');
+app.post('/api/analyze-transcript', 
+  // Add error handling for each middleware
+  (req, res, next) => {
+    console.log('🔵 [1/4] Request received at /api/analyze-transcript');
+    console.log('   Headers:', {
+      authorization: req.headers['authorization'] ? 'Present' : 'Missing',
+      contentType: req.headers['content-type'],
+      contentLength: req.headers['content-length']
+    });
+    next();
+  },
+  authenticateToken,
+  (req, res, next) => {
+    console.log('🟢 [2/4] Authentication passed');
+    console.log('   User:', req.user?.email || req.user?.id);
+    next();
+  },
+  checkTranscriptLimits,
+  (req, res, next) => {
+    console.log('🟢 [3/4] Usage limits check passed');
+    next();
+  },
+  (req, res, next) => {
+    // Wrap multer to catch errors
+    upload.single('transcript')(req, res, (err) => {
+      if (err) {
+        console.error('❌ Multer error:', err.message);
+        console.error('   Error code:', err.code);
+        console.error('   Error field:', err.field);
+        
+        // Handle specific multer errors
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(400).json({ 
+            error: 'File too large. Maximum size is 25MB.',
+            code: 'FILE_TOO_LARGE'
+          });
+        }
+        if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+          return res.status(400).json({ 
+            error: 'Unexpected file field. Expected field name: "transcript"',
+            code: 'INVALID_FIELD_NAME'
+          });
+        }
+        if (err.message && err.message.includes('Invalid file type')) {
+          return res.status(400).json({ 
+            error: err.message,
+            code: 'INVALID_FILE_TYPE'
+          });
+        }
+        
+        return res.status(400).json({ 
+          error: err.message || 'File upload failed',
+          code: 'UPLOAD_ERROR'
+        });
+      }
+      
+      console.log('🟢 [4/4] File upload middleware completed');
+      console.log('   File received:', !!req.file);
+      if (req.file) {
+        console.log('   File details:', {
+          name: req.file.originalname,
+          size: req.file.size,
+          type: req.file.mimetype
+        });
+      } else {
+        console.error('   ❌ No file in req.file');
+        console.log('   Request body keys:', Object.keys(req.body));
+        console.log('   Request body:', req.body);
+        return res.status(400).json({ 
+          error: 'No file received. Please ensure you are uploading a file with the field name "transcript".',
+          code: 'NO_FILE_RECEIVED',
+          receivedFields: Object.keys(req.body)
+        });
+      }
+      next();
+    });
+  },
+  asyncHandler(async (req, res) => {
+    console.log('📥 Transcript analysis endpoint called');
+    console.log('Request details:', {
+      method: req.method,
+      url: req.url,
+      hasFile: !!req.file,
+      hasUser: !!req.user,
+      userId: req.user?.id || req.user?._id,
+      userEmail: req.user?.email,
+      contentType: req.headers['content-type'],
+      contentLength: req.headers['content-length']
+    });
     
     if (!req.file) {
-      return res.status(400).json({ error: 'No transcript file provided' });
+      console.error('❌ No file received in request');
+      console.log('Request body keys:', Object.keys(req.body));
+      console.log('Request files:', req.files);
+      return res.status(400).json({ error: 'No transcript file provided. Please ensure you are uploading a file.' });
     }
-
-  console.log('File received:', req.file.originalname, 'Type:', req.file.mimetype);
+    
+    console.log('✅ File received:', {
+      originalname: req.file.originalname,
+      mimetype: req.file.mimetype,
+      size: req.file.size,
+      filename: req.file.filename,
+      path: req.file.path
+    });
 
     // Generate unique analysis ID
     const analysisId = `analysis_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -1166,19 +1241,35 @@ Be specific and actionable in your analysis.`
       sourceType: isAudioFile ? 'audio' : 'text'
     });
 
+    console.log('✅ Analysis complete, sending response:', {
+      hasSummary: !!analysis.summary,
+      hasObjections: !!analysis.objections,
+      hasActionItems: !!analysis.actionItems,
+      sentiment: analysis.sentiment,
+      analysisKeys: Object.keys(analysis)
+    });
+
     res.json(analysis);
 
   } catch (error) {
-    console.error('Analysis error:', error);
+    console.error('❌ Analysis error:', error);
+    console.error('   Error name:', error.name);
+    console.error('   Error message:', error.message);
+    console.error('   Error stack:', error.stack);
     
     // Emit error event
     io.emit('analysisError', {
       analysisId: req.body.analysisId || analysisId,
-      error: 'Failed to analyze transcript',
+      error: error.message || 'Failed to analyze transcript',
       timestamp: new Date()
     });
     
-    res.status(500).json({ error: 'Failed to analyze transcript' });
+    // Provide more detailed error message
+    const errorMessage = error.message || 'Failed to analyze transcript';
+    res.status(500).json({ 
+      error: errorMessage,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 }));
 
