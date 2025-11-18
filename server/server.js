@@ -831,39 +831,10 @@ app.get('/api/admin/users',
   })
 );
 
-// Transcript analysis endpoint
-app.post('/api/analyze-transcript', authenticateToken, async (req, res) => {
-  try {
-    const { transcript, title } = req.body;
-    
-    if (!transcript || transcript.trim().length === 0) {
-      return res.status(400).json({ error: 'Transcript content is required' });
-    }
-
-    // Analyze with OpenAI
-    const analysis = await analyzeTranscript(transcript);
-    
-    // Save to database
-    const newTranscript = new Transcript({
-      user: req.user.id,
-      title: title || `Transcript ${new Date().toLocaleDateString()}`,
-      content: transcript,
-      analysis,
-      createdAt: new Date()
-    });
-
-    await newTranscript.save();
-
-    res.json({
-      message: 'Transcript analyzed successfully',
-      transcriptId: newTranscript._id,
-      analysis
-    });
-  } catch (error) {
-    console.error('Transcript analysis error:', error);
-    res.status(500).json({ error: 'Failed to analyze transcript' });
-  }
-});
+// OLD Transcript analysis endpoint - REMOVED
+// This endpoint expected text in request body, but we now use file uploads
+// The file upload endpoint is below at line 869
+// If you need text-based analysis, use the file upload endpoint with a text file
 
 // Enhanced transcript analysis with audio transcription support
 app.post('/api/analyze-transcript', 
