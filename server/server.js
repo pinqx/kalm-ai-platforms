@@ -1800,24 +1800,51 @@ app.get('/api/analytics', authenticateToken, async (req, res) => {
     const userId = req.user.id;
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-    // Get analytics data from database
-    const userObjectId = new mongoose.Types.ObjectId(userId);
+    console.log('📊 Analytics request for user:', userId);
+
+    // Check database connection
+    if (mongoose.connection.readyState !== 1) {
+      console.warn('⚠️ Database not connected, returning mock analytics');
+      return res.json({
+        totalTranscripts: 0,
+        recentTranscripts: 0,
+        sentimentBreakdown: [],
+        topObjections: [],
+        generatedAt: new Date().toISOString()
+      });
+    }
+
+    // Get analytics data from database - use userId (not user)
+    let userObjectId;
+    try {
+      if (mongoose.Types.ObjectId.isValid(userId)) {
+        userObjectId = new mongoose.Types.ObjectId(userId);
+      } else {
+        console.error('❌ Invalid user ID format:', userId);
+        return res.status(400).json({ error: 'Invalid user ID' });
+      }
+    } catch (objectIdError) {
+      console.error('❌ Error creating ObjectId:', objectIdError);
+      return res.status(400).json({ error: 'Invalid user ID format' });
+    }
+
+    console.log('🔍 Querying transcripts for userId:', userObjectId.toString());
 
     const [totalCount, recentCount, sentimentBreakdown, topObjections] = await Promise.all([
-      Transcript.countDocuments({ user: userObjectId }),
+      Transcript.countDocuments({ userId: userObjectId }),
       Transcript.countDocuments({ 
-        user: userObjectId, 
+        userId: userObjectId, 
         createdAt: { $gte: thirtyDaysAgo } 
       }),
       Transcript.aggregate([
-        { $match: { user: userObjectId } },
-        { $group: { _id: '$analysis.overallSentiment', count: { $sum: 1 } } },
+        { $match: { userId: userObjectId } },
+        { $group: { _id: '$analysis.sentiment', count: { $sum: 1 } } },
         { $sort: { count: -1 } }
       ]),
       Transcript.aggregate([
-        { $match: { user: userObjectId } },
-        { $unwind: '$analysis.keyObjections' },
-        { $group: { _id: '$analysis.keyObjections', count: { $sum: 1 } } },
+        { $match: { userId: userObjectId } },
+        { $unwind: '$analysis.objections' },
+        { $group: { _id: '$analysis.objections', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: 5 }
       ])
