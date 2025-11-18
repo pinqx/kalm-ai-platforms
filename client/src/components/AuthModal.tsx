@@ -76,7 +76,9 @@ export default function AuthModal({ isOpen, onClose, onAuth }: AuthModalProps) {
       }
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || `Authentication failed: ${response.status} ${response.statusText}`);
+        // Use hint if available, otherwise use error message
+        const errorMessage = data.hint || data.error || data.message || `Authentication failed: ${response.status} ${response.statusText}`;
+        throw new Error(errorMessage);
       }
 
       // Validate response has required fields

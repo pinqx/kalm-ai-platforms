@@ -701,15 +701,44 @@ app.post('/api/auth/login', [
   try {
     const { email, password } = req.body;
     
-    const user = await User.findOne({ email });
-    if (!user || !user.isActive) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+    console.log('🔐 Login attempt:', {
+      email: email,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Normalize email (lowercase, trim)
+    const normalizedEmail = email.toLowerCase().trim();
+    
+    const user = await User.findOne({ email: normalizedEmail });
+    
+    if (!user) {
+      console.log('❌ Login failed: User not found:', normalizedEmail);
+      return res.status(401).json({ 
+        error: 'Invalid credentials',
+        hint: 'Please check your email and password, or create an account if you don\'t have one'
+      });
     }
 
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+    if (!user.isActive) {
+      console.log('❌ Login failed: User account inactive:', normalizedEmail);
+      return res.status(401).json({ 
+        error: 'Account is inactive',
+        hint: 'Please contact support to reactivate your account'
+      });
     }
+
+    console.log('🔍 Comparing password for user:', normalizedEmail);
+    const isMatch = await user.comparePassword(password);
+    
+    if (!isMatch) {
+      console.log('❌ Login failed: Invalid password for:', normalizedEmail);
+      return res.status(401).json({ 
+        error: 'Invalid credentials',
+        hint: 'Please check your email and password'
+      });
+    }
+
+    console.log('✅ Login successful for:', normalizedEmail);
 
     // Update last login
     user.lastLogin = new Date();
@@ -736,8 +765,16 @@ app.post('/api/auth/login', [
       }
     });
   } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ error: 'Login failed' });
+    console.error('❌ Login error:', error);
+    console.error('   Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
+    res.status(500).json({ 
+      error: 'Login failed',
+      hint: 'An error occurred during login. Please try again.'
+    });
   }
 });
 
