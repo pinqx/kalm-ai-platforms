@@ -99,8 +99,25 @@ function App() {
   }, [activeTab, user]);
 
   const handleAuth = (userData: any, authToken: string) => {
+    console.log('🔐 handleAuth called with user:', userData);
+    
+    // Clear old user data first
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    
+    // Set new user data
     setUser(userData);
     setToken(authToken);
+    
+    // Save to localStorage
+    localStorage.setItem('token', authToken);
+    localStorage.setItem('user', JSON.stringify(userData));
+    
+    console.log('✅ User state updated:', {
+      firstName: userData?.firstName,
+      email: userData?.email,
+      tokenLength: authToken?.length
+    });
     
     // After successful authentication, redirect to upload tab
     if (activeTab === 'home') {

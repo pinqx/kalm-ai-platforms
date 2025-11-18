@@ -50,9 +50,19 @@ export default function AuthModal({ isOpen, onClose, onAuth }: AuthModalProps) {
         throw new Error(data.error || 'Authentication failed');
       }
 
-      // Store token and user data
+      // Clear any old user data first to prevent stale data
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      
+      // Store new token and user data
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
+      
+      console.log('🔐 AuthModal: Storing new user data:', {
+        firstName: data.user?.firstName,
+        email: data.user?.email,
+        fullName: data.user?.fullName
+      });
       
       onAuth(data.user, data.token);
       onClose();
