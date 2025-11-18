@@ -393,9 +393,9 @@ function App() {
                 <div className="flex items-center space-x-4">
                   <div className="text-right">
                     <p className="text-sm font-medium text-gray-700">
-                      Welcome back, {user.firstName}!
+                      Welcome back, {user?.firstName || user?.fullName?.split(' ')[0] || 'User'}!
                     </p>
-                    <p className="text-xs text-gray-500">{user.email}</p>
+                    <p className="text-xs text-gray-500">{user?.email}</p>
                   </div>
                   <div className="relative group">
                     <button className="p-3 text-gray-400 hover:text-gray-600 bg-gray-50 rounded-full hover:bg-gray-100 transition-all duration-200">
