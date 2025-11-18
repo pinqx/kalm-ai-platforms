@@ -36,7 +36,16 @@ export default function AuthModal({ isOpen, onClose, onAuth }: AuthModalProps) {
 
     try {
       const endpoint = isLogin ? 'login' : 'register';
-      const response = await fetch(getApiUrl(`/api/auth/${endpoint}`), {
+      const apiUrl = getApiUrl(`/api/auth/${endpoint}`);
+      
+      console.log('🔐 AuthModal: Attempting authentication:', {
+        endpoint,
+        apiUrl,
+        email: form.email,
+        isLogin
+      });
+
+      const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -44,10 +53,35 @@ export default function AuthModal({ isOpen, onClose, onAuth }: AuthModalProps) {
         body: JSON.stringify(form),
       });
 
-      const data = await response.json();
+      console.log('🔐 AuthModal: Response received:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok
+      });
+
+      // Check if response is ok before trying to parse JSON
+      let data;
+      try {
+        const responseText = await response.text();
+        console.log('🔐 AuthModal: Response text:', responseText.substring(0, 200));
+        
+        if (!responseText || responseText.trim().length === 0) {
+          throw new Error('Empty response from server');
+        }
+        
+        data = JSON.parse(responseText);
+      } catch (parseError) {
+        console.error('🔐 AuthModal: Failed to parse response:', parseError);
+        throw new Error('Invalid response from server. Please try again.');
+      }
 
       if (!response.ok) {
-        throw new Error(data.error || 'Authentication failed');
+        throw new Error(data.error || data.message || `Authentication failed: ${response.status} ${response.statusText}`);
+      }
+
+      // Validate response has required fields
+      if (!data.token || !data.user) {
+        throw new Error('Invalid response from server. Missing authentication data.');
       }
 
       // Clear any old user data first to prevent stale data
@@ -77,7 +111,24 @@ export default function AuthModal({ isOpen, onClose, onAuth }: AuthModalProps) {
       });
 
     } catch (error: any) {
-      setError(error.message);
+      console.error('🔐 AuthModal: Authentication error:', error);
+      
+      // Provide user-friendly error messages
+      let errorMessage = 'Authentication failed';
+      
+      if (error.message) {
+        errorMessage = error.message;
+      } else if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        errorMessage = 'Unable to connect to server. Please check your internet connection and try again.';
+      } else if (error.name === 'NetworkError' || error.message.includes('NetworkError')) {
+        errorMessage = 'Network error. Please check your connection and try again.';
+      } else if (error.message.includes('CORS')) {
+        errorMessage = 'Connection blocked. Please try again or contact support.';
+      } else if (error.message.includes('timeout')) {
+        errorMessage = 'Request timed out. Please try again.';
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
