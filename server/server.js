@@ -1343,20 +1343,66 @@ function getMockAnalysis(transcriptText) {
   };
 }
 
+// Helper functions for formatting
+function formatFileSize(bytes) {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+function getTimeAgo(date) {
+  if (!date) return 'Unknown';
+  const now = new Date();
+  const then = new Date(date);
+  const diff = now - then;
+  const minutes = Math.floor(diff / 60000);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  
+  if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+  if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+  if (minutes > 0) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+  return 'Just now';
+}
+
 // Get transcripts list
-app.get('/api/transcripts', authenticateToken, async (req, res) => {
+app.get('/api/transcripts', authenticateToken, asyncHandler(async (req, res) => {
   try {
+    console.log('📋 Fetching transcripts for user:', req.user.id || req.user._id);
+    
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const transcripts = await Transcript.find({ userId: req.user.id })
+    // Check database connection
+    if (mongoose.connection.readyState !== 1) {
+      console.warn('⚠️ Database not connected, returning empty list');
+      return res.json({
+        transcripts: [],
+        pagination: {
+          current: page,
+          pages: 0,
+          total: 0,
+          hasNext: false,
+          hasPrev: false
+        }
+      });
+    }
+
+    const userId = req.user.id || req.user._id;
+    console.log('🔍 Querying transcripts for userId:', userId);
+
+    const transcripts = await Transcript.find({ userId: userId })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .lean();
 
-    const totalTranscripts = await Transcript.countDocuments({ userId: req.user.id });
+    console.log(`✅ Found ${transcripts.length} transcripts`);
+
+    const totalTranscripts = await Transcript.countDocuments({ userId: userId });
 
     // Format the transcripts
     const formattedTranscripts = transcripts.map(transcript => ({
@@ -1376,10 +1422,18 @@ app.get('/api/transcripts', authenticateToken, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error fetching transcripts:', error);
-    res.status(500).json({ error: 'Failed to fetch transcripts' });
+    console.error('❌ Error fetching transcripts:', error);
+    console.error('   Error details:', {
+      message: error.message,
+      stack: error.stack,
+      userId: req.user?.id || req.user?._id
+    });
+    res.status(500).json({ 
+      error: 'Failed to fetch transcripts',
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
-});
+}));
 
 // Enhanced email generation
 app.post('/api/generate-email', authenticateToken, async (req, res) => {
