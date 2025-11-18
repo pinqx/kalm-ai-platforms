@@ -1850,6 +1850,13 @@ app.get('/api/analytics', authenticateToken, async (req, res) => {
       ])
     ]);
 
+    console.log('✅ Analytics data retrieved:', {
+      totalCount,
+      recentCount,
+      sentimentBreakdownCount: sentimentBreakdown.length,
+      topObjectionsCount: topObjections.length
+    });
+
     res.json({
       totalTranscripts: totalCount,
       recentTranscripts: recentCount,
@@ -1858,7 +1865,12 @@ app.get('/api/analytics', authenticateToken, async (req, res) => {
       generatedAt: new Date().toISOString()
     });
   } catch (error) {
-    console.error('Analytics error:', error);
+    console.error('❌ Analytics error:', error);
+    console.error('   Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     res.status(500).json({ error: 'Failed to generate analytics' });
   }
 });
