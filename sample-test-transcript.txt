@@ -1,0 +1,98 @@
+Sales Call Transcript - Test File
+Date: November 18, 2025
+Duration: 15 minutes
+Participants: Sarah (Sales Rep), Mike (Prospect - VP of Sales at TechCorp)
+
+---
+
+[00:00] Sarah: Hi Mike, thanks for taking the time to speak with me today. I know you're busy, so I really appreciate it.
+
+[00:05] Mike: No problem, Sarah. I'm interested in learning more about your AI sales platform. We've been looking for ways to improve our sales team's performance.
+
+[00:12] Sarah: Great! So I understand you're managing a team of about 25 sales reps. What are some of the biggest challenges you're facing right now?
+
+[00:20] Mike: Well, honestly, our biggest issue is that we're not getting enough visibility into what's happening during sales calls. Our reps are having conversations, but we don't really know if they're handling objections well or if they're following our sales process.
+
+[00:35] Sarah: That's exactly what our platform addresses. Our AI analyzes every sales call in real-time and provides insights on objections, sentiment, key topics, and action items. Can you tell me more about your current process?
+
+[00:45] Mike: Right now, we're doing manual call reviews. Managers listen to maybe 2-3 calls per rep per month, but it's not scalable. We need something that can analyze all calls automatically.
+
+[00:55] Sarah: Perfect. Our system analyzes 100% of your calls automatically. It identifies objections in real-time, tracks sentiment throughout the conversation, and generates actionable insights. Have you looked at any other solutions?
+
+[01:10] Mike: We've looked at a few, but they're either too expensive or don't integrate well with our CRM. What about pricing? That's always a concern for us.
+
+[01:20] Sarah: I understand budget is important. Our pricing starts at $99 per rep per month for the professional tier, which includes unlimited call analysis, advanced analytics, and CRM integration. We also have an enterprise tier for larger teams. What's your budget range?
+
+[01:35] Mike: Hmm, that's a bit higher than we were hoping. We were thinking more in the $50-70 range per rep. Is there any flexibility there?
+
+[01:45] Sarah: I can definitely work with you on pricing, especially for a team of 25. We also offer volume discounts. But before we talk numbers, I'd love to understand what ROI you're looking for. What would success look like for you?
+
+[02:00] Mike: Well, if we could increase our close rate by even 5%, that would be huge. Right now we're at about 22%, and if we could get to 27%, that would mean an extra $500K in revenue per quarter.
+
+[02:15] Sarah: That's exactly the kind of impact we've seen. One of our clients, a similar-sized company, increased their close rate by 8% in the first quarter after implementing our platform. The ROI was over 300%. 
+
+[02:30] Mike: That's impressive. But I'm also concerned about implementation. How long does it take to get set up? We can't afford a lot of downtime.
+
+[02:40] Sarah: Great question. Our implementation is typically 2-3 days. We handle the CRM integration, train your team, and you're up and running. Most of our clients see value within the first week. What's your timeline?
+
+[02:55] Mike: We'd want to start in January, so we have about 6 weeks. That should be enough time, right?
+
+[03:05] Sarah: Absolutely, that's plenty of time. We can have you fully set up and trained well before January. Now, I know you mentioned CRM integration is important. What CRM are you using?
+
+[03:15] Mike: We're on Salesforce. Is that supported?
+
+[03:20] Sarah: Yes, Salesforce is one of our primary integrations. We have a native integration that syncs all your call data, insights, and action items directly into Salesforce. It's seamless.
+
+[03:35] Mike: That's good to hear. But I'm still worried about the cost. $99 per rep is a significant investment for 25 people. That's almost $2,500 per month.
+
+[03:50] Sarah: I completely understand. Let me put this in perspective - if you increase your close rate by just 5%, you're looking at an extra $500K per quarter. That's $2 million per year. The platform would pay for itself many times over. But I can also offer you a 20% discount for annual prepayment, which would bring it down to about $79 per rep per month.
+
+[04:10] Mike: That's still a lot. I'd need to get approval from our CFO. And honestly, I'm not sure we have budget allocated for this in Q1.
+
+[04:20] Sarah: I understand budget constraints. Many of our clients start with a pilot program - maybe 5-10 reps for the first quarter to prove the value, then expand. Would that be something you'd be open to?
+
+[04:35] Mike: That could work. But I'm also concerned about data security. We deal with sensitive customer information. How do you handle that?
+
+[04:45] Sarah: Excellent question. Security is our top priority. We're SOC 2 Type II certified, we use end-to-end encryption, and all data is stored in secure, compliant data centers. We also offer on-premise deployment options if you prefer. Would you like me to send you our security documentation?
+
+[05:00] Mike: Yes, that would be helpful. I'll need to review it with our security team.
+
+[05:05] Sarah: Perfect, I'll send that over today. Now, let me ask - what would need to happen for you to move forward with this? What are the key decision criteria?
+
+[05:20] Mike: Well, I need to see the ROI clearly, get security approval, and make sure the pricing works. I also want to make sure my team will actually use it. Change management is always a challenge.
+
+[05:35] Sarah: Those are all valid concerns. For ROI, I can provide detailed case studies from companies similar to yours. For security, we can set up a call with our security team. And for adoption, our platform has a 95% user adoption rate because it's so easy to use - reps just make calls as normal, and they get insights automatically.
+
+[05:55] Mike: That sounds good. But I'm still not 100% convinced. I think I need to see a demo with our actual data or at least a more detailed walkthrough.
+
+[06:10] Sarah: Absolutely. I'd love to set up a personalized demo for you and your team. We can use sample data that matches your industry, or if you're comfortable, we can analyze a few of your actual calls. When would be a good time for that?
+
+[06:25] Mike: How about next Tuesday afternoon? Say 2 PM?
+
+[06:30] Sarah: Perfect, I have that slot available. I'll send you a calendar invite. Before we wrap up, is there anything else you'd like to know?
+
+[06:40] Mike: Actually, yes. What kind of support do you provide? If we have issues or questions, how responsive are you?
+
+[06:50] Sarah: Great question. We provide 24/7 support with an average response time of under 2 hours. For enterprise clients, you get a dedicated success manager. We also have extensive documentation and training resources. Support is included in all our plans.
+
+[07:05] Mike: Okay, that's helpful. I think I have enough information for now. Let me discuss this with my team and review the security docs, and then we can talk after the demo.
+
+[07:15] Sarah: Perfect. I'll send over the security documentation today, and I'll follow up tomorrow to confirm the demo details. Is there anything specific you'd like me to focus on during the demo?
+
+[07:30] Mike: I'd like to see how the objection detection works in real-time, and how the insights are presented to managers. Also, the Salesforce integration - I want to see that in action.
+
+[07:45] Sarah: Perfect, I'll make sure to cover all of those. I'm really excited about the potential here, Mike. I think this could make a huge difference for your team.
+
+[07:55] Mike: I hope so. Thanks for your time today, Sarah. I'll talk to you soon.
+
+[08:00] Sarah: Thank you, Mike. I look forward to our demo next Tuesday. Have a great day!
+
+---
+
+Call Summary:
+- Duration: 8 minutes
+- Sentiment: Positive but cautious
+- Key Objections: Pricing concerns, budget constraints, security questions, implementation timeline
+- Action Items: Send security documentation, schedule demo for Tuesday 2 PM, follow up tomorrow
+- Next Steps: Demo scheduled, security review pending, pricing discussion needed
+

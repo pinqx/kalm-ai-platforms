@@ -37,14 +37,22 @@ const UserPresence: React.FC<UserPresenceProps> = ({
   useEffect(() => {
     console.log('🚀 UserPresence: Initializing with user:', currentUser);
     
+    // Get WebSocket URL from config
+    const wsUrl = import.meta.env.VITE_WS_URL || 'https://web-production-e7159.up.railway.app';
+    console.log('🔌 UserPresence: Connecting to:', wsUrl);
+    
     // Initialize socket connection with error handling and retries
-    const newSocket = io('https://web-production-e7159.up.railway.app', {
+    const newSocket = io(wsUrl, {
       withCredentials: true,
-      timeout: 10000,
+      timeout: 20000, // Increased timeout
       reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-      forceNew: true
+      reconnectionAttempts: 10, // More retry attempts
+      reconnectionDelay: 2000, // Longer delay between retries
+      reconnectionDelayMax: 10000,
+      forceNew: false, // Reuse connection if possible
+      transports: ['websocket', 'polling'], // Try websocket first, fallback to polling
+      upgrade: true,
+      rememberUpgrade: true
     });
 
     setSocket(newSocket);
@@ -118,8 +126,20 @@ const UserPresence: React.FC<UserPresenceProps> = ({
     // Connection error handling
     newSocket.on('connect_error', (error) => {
       console.error('❌ UserPresence: Connection error:', error);
+      console.error('   Error type:', error.type);
+      console.error('   Error message:', error.message);
       setIsConnected(false);
-      setConnectionError(error.message || 'Connection failed');
+      
+      // Provide more helpful error messages
+      let errorMessage = 'Connection failed';
+      if (error.message.includes('xhr poll error') || error.message.includes('polling')) {
+        errorMessage = 'Unable to connect to collaboration server. Please check your connection.';
+      } else if (error.message.includes('timeout')) {
+        errorMessage = 'Connection timeout. The server may be busy.';
+      } else {
+        errorMessage = error.message || 'Connection failed';
+      }
+      setConnectionError(errorMessage);
     });
 
     // Reconnection events

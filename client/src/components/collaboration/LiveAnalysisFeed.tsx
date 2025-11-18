@@ -50,13 +50,21 @@ const LiveAnalysisFeed: React.FC<LiveAnalysisFeedProps> = ({
   useEffect(() => {
     console.log('🚀 LiveAnalysisFeed: Initializing with user:', currentUser);
     
-    const newSocket = io('https://web-production-e7159.up.railway.app', {
+    // Get WebSocket URL from config
+    const wsUrl = import.meta.env.VITE_WS_URL || 'https://web-production-e7159.up.railway.app';
+    console.log('🔌 LiveAnalysisFeed: Connecting to:', wsUrl);
+    
+    const newSocket = io(wsUrl, {
       withCredentials: true,
-      timeout: 10000,
+      timeout: 20000,
       reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-      forceNew: true
+      reconnectionAttempts: 10,
+      reconnectionDelay: 2000,
+      reconnectionDelayMax: 10000,
+      forceNew: false,
+      transports: ['websocket', 'polling'],
+      upgrade: true,
+      rememberUpgrade: true
     });
 
     setSocket(newSocket);

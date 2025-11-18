@@ -100,16 +100,31 @@ const emailService = require('./services/emailService');
 
 const app = express();
 const server = http.createServer(app);
+// Socket.io CORS configuration - use same origins as HTTP CORS
+const socketCorsOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5174', 
+  'http://localhost:5175',
+  'https://kalm-ai-platforms.vercel.app',
+  'https://kalm-ai-platforms-git-main-alexs-projects-669e350e.vercel.app',
+  'https://kalm.live',
+  'https://www.kalm.live',
+  process.env.FRONTEND_URL,
+  // Allow all origins in production for WebSocket connections
+  ...(process.env.NODE_ENV === 'production' ? ['*'] : [])
+].filter(Boolean);
+
 const io = socketIo(server, {
   cors: {
-    origin: [
-      'http://localhost:5173',
-      'http://localhost:5174', 
-      'http://localhost:5175',
-      process.env.FRONTEND_URL || 'http://localhost:5173'
-    ],
-    credentials: true
-  }
+    origin: process.env.NODE_ENV === 'production' 
+      ? true  // Allow all origins in production for WebSocket
+      : socketCorsOrigins,
+    credentials: true,
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  },
+  transports: ['websocket', 'polling'], // Support both transports
+  allowEIO3: true // Allow Engine.IO v3 clients
 });
 const port = process.env.PORT || 3000;
 
