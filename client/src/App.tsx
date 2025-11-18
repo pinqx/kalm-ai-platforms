@@ -442,14 +442,6 @@ function App() {
                   Sign In
                 </button>
               )}
-              
-              {/* Admin Access Button */}
-              <button
-                onClick={() => setShowAdminLogin(true)}
-                className="bg-gradient-to-r from-red-600 to-pink-600 text-white px-4 py-2 rounded-lg hover:from-red-700 hover:to-pink-700 text-xs font-medium shadow-lg hover:shadow-xl transition-all duration-200"
-              >
-                Admin
-              </button>
             </div>
           </div>
         </div>
