@@ -1044,28 +1044,71 @@ app.post('/api/analyze-transcript',
 
     } else {
       // Handle text file
-    try {
-      transcriptText = await fs.readFile(req.file.path, 'utf-8');
+      console.log('📄 Processing text file:', {
+        path: req.file.path,
+        mimetype: req.file.mimetype,
+        size: req.file.size
+      });
       
+      try {
+        // Check if file exists
+        const fileExists = await fs.access(req.file.path).then(() => true).catch(() => false);
+        if (!fileExists) {
+          console.error('❌ File does not exist at path:', req.file.path);
+          throw new Error(`File not found at path: ${req.file.path}`);
+        }
+        
+        // Read file content
+        transcriptText = await fs.readFile(req.file.path, 'utf-8');
+        
+        console.log('✅ File read successfully:', {
+          contentLength: transcriptText.length,
+          firstChars: transcriptText.substring(0, 100)
+        });
+        
         // Emit progress update for text processing
-      io.emit('analysisProgress', {
-        analysisId,
-        progress: 25,
+        io.emit('analysisProgress', {
+          analysisId,
+          progress: 25,
           stage: 'Text file processed',
-        timestamp: new Date()
-      });
-    } catch (error) {
-        console.error('Error reading text file:', error);
-      io.emit('analysisError', {
-        analysisId,
-        error: 'Failed to read transcript file',
-        timestamp: new Date()
-      });
-      return res.status(400).json({ error: 'Failed to read transcript file' });
+          timestamp: new Date()
+        });
+      } catch (error) {
+        console.error('❌ Error reading text file:', {
+          error: error.message,
+          stack: error.stack,
+          filePath: req.file.path,
+          fileSize: req.file.size,
+          mimetype: req.file.mimetype
+        });
+        io.emit('analysisError', {
+          analysisId,
+          error: `Failed to read transcript file: ${error.message}`,
+          timestamp: new Date()
+        });
+        return res.status(400).json({ 
+          error: `Failed to read transcript file: ${error.message}`,
+          details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        });
       }
     }
 
+    // Validate transcript content
+    if (!transcriptText || typeof transcriptText !== 'string') {
+      console.error('❌ Transcript text is invalid:', {
+        type: typeof transcriptText,
+        value: transcriptText
+      });
+      io.emit('analysisError', {
+        analysisId,
+        error: 'Transcript content is invalid or empty',
+        timestamp: new Date()
+      });
+      return res.status(400).json({ error: 'Transcript content is required' });
+    }
+    
     if (!transcriptText.trim()) {
+      console.error('❌ Transcript text is empty after trim');
       io.emit('analysisError', {
         analysisId,
         error: 'Transcript content is empty',
