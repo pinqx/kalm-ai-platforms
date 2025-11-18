@@ -404,8 +404,8 @@ function App() {
                     <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 transform group-hover:scale-100 scale-95 z-50">
                       <div className="py-2">
                         <div className="px-4 py-3 text-xs text-gray-500 border-b border-gray-100 bg-gray-50 rounded-t-xl">
-                          <div className="font-medium text-gray-700">{user.firstName} {user.lastName}</div>
-                          <div className="truncate">{user.email}</div>
+                          <div className="font-medium text-gray-700">{user?.firstName || user?.fullName?.split(' ')[0] || 'User'} {user?.lastName || user?.fullName?.split(' ').slice(1).join(' ') || ''}</div>
+                          <div className="truncate">{user?.email}</div>
                         </div>
                         <button
                           onClick={() => setActiveTab('history')}
