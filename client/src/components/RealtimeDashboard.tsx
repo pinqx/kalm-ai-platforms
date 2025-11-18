@@ -9,7 +9,7 @@ import {
   CheckCircleIcon,
   InformationCircleIcon
 } from '@heroicons/react/24/outline';
-import { getWsUrl } from '../config';
+import { getWsUrl, getApiUrl } from '../config';
 
 interface ActiveUser {
   email: string;
@@ -57,9 +57,10 @@ interface ChatMessage {
 
 interface RealtimeDashboardProps {
   user: any;
+  token?: string;
 }
 
-const RealtimeDashboard: React.FC<RealtimeDashboardProps> = ({ user }) => {
+const RealtimeDashboard: React.FC<RealtimeDashboardProps> = ({ user, token }) => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [activeUsers, setActiveUsers] = useState<ActiveUser[]>([]);
@@ -71,6 +72,42 @@ const RealtimeDashboard: React.FC<RealtimeDashboardProps> = ({ user }) => {
   const [chatInput, setChatInput] = useState('');
   const [showChat, setShowChat] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Fetch recent analyses on mount
+  useEffect(() => {
+    const fetchRecentAnalyses = async () => {
+      if (!user || !token) return;
+      
+      try {
+        const response = await fetch(`${getApiUrl()}/api/transcripts?page=1&limit=5`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.transcripts && data.transcripts.length > 0) {
+            // Convert transcripts to AnalysisResult format
+            const analyses: AnalysisResult[] = data.transcripts.map((t: any) => ({
+              analysisId: t._id,
+              result: t.analysis,
+              completedBy: user.email || 'Unknown',
+              timestamp: t.createdAt || new Date().toISOString(),
+              filename: t.originalFileName || t.fileName,
+              userId: t.userId
+            }));
+            setRecentAnalyses(analyses);
+            console.log('✅ Loaded', analyses.length, 'recent analyses');
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching recent analyses:', error);
+      }
+    };
+
+    fetchRecentAnalyses();
+  }, [user, token]);
 
   useEffect(() => {
     // Initialize Socket.io connection

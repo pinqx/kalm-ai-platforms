@@ -659,7 +659,7 @@ function App() {
                     </div>
                   </div>
                 </div>
-                <RealtimeDashboard user={user} />
+                <RealtimeDashboard user={user} token={token} />
               </div>
             )}
 
